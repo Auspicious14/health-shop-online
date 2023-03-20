@@ -31,3 +31,17 @@ export const verifyTokenAndAuth = (
     }
   });
 };
+export const verifyTokenAndAdmin = (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  verifyToken(req, res, () => {
+    console.log(req);
+    if (req.user.isAdmin) {
+      next();
+    } else {
+      res.json({ error: "invalid params" });
+    }
+  });
+};

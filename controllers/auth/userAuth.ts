@@ -26,7 +26,16 @@ export const createUserAuth = async (req: Request, res: Response) => {
     });
     const token = createToken(user._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge: expiresIn * 1000 });
-    res.json({ user });
+    res.json({
+      user: {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        isAdmin: user?.isAdmin,
+        createdAt: user?.createdAt,
+        updatedAt: user?.updatedAt,
+      },
+    });
   } catch (error) {
     console.log(error);
     const err = handleErrors(error);
@@ -65,8 +74,11 @@ export const loginUserAuth = async (req: Request, res: Response) => {
 
 export const updateuser = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const { firstName, lastName, email, password, isAdmin } = req.body;
+  let { firstName, lastName, email, password, isAdmin } = req.body;
   try {
+    if (password) {
+      password = await argon2.hash(password);
+    }
     const user: any = await userAuthModel.findByIdAndUpdate(
       id,
       {
@@ -75,7 +87,7 @@ export const updateuser = async (req: Request, res: Response) => {
       { new: true }
     );
     if (!user) return res.json({ error: "No user matched" });
-    console.log(user);
+
     res.json({
       user: {
         firstName: user?.firstName,
@@ -86,6 +98,38 @@ export const updateuser = async (req: Request, res: Response) => {
         updatedAt: user?.updatedAt,
       },
     });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const deleteUserAuth = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const user: any = await userAuthModel.findByIdAndDelete(id);
+    res.json({ message: "user has been deleted" });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const getUserAuth = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const user: any = await userAuthModel.findById(id);
+    res.json({ user });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const getUsersAuth = async (req: Request, res: Response) => {
+  try {
+    const users: any = await userAuthModel.find();
+    res.json({ users });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
