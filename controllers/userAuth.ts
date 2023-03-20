@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import * as argon2 from "argon2";
 import userAuthModel from "../models/userAuth";
-import { handleErrors } from "../middlewares/userAuth";
+import { handleErrors } from "../middlewares/errorHandler";
 dotenv.config();
 const secret = process.env.TOKEN_SECRET;
 const expiresIn = 60 * 60;

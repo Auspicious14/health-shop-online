@@ -1,4 +1,5 @@
 import router from "./routes/userAuth";
+import productRouter from "./routes/product";
 const cookieParser = require("cookie-parser");
 import express from "express";
 const app = express();
@@ -15,3 +16,4 @@ mongoose
 app.use(cookieParser());
 app.use(express.json());
 app.use(router);
+app.use(productRouter);
