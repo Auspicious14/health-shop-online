@@ -36,9 +36,8 @@ export const createUserAuth = async (req: Request, res: Response) => {
 
 export const loginUserAuth = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log(email);
   try {
-    const user: any = await userAuthModel.findOne(email);
+    const user: any = await userAuthModel.findOne({ email });
     if (!user.email) return res.json({ error: "Email Not found" });
     const comparePassword: boolean = await argon2.verify(
       user.password,
@@ -47,7 +46,15 @@ export const loginUserAuth = async (req: Request, res: Response) => {
     if (!comparePassword) return res.json({ error: "Password Not matched" });
     const token = createToken(user?._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge: expiresIn * 1000 });
-    res.json({ user, token });
+    res.json({
+      user: {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        isAdmin: user?.isAdmin,
+      },
+      token,
+    });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });

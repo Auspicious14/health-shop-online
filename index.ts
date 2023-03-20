@@ -14,4 +14,4 @@ mongoose
   );
 app.use(cookieParser());
 app.use(express.json());
-app.use("/auth", router);
+app.use(router);
