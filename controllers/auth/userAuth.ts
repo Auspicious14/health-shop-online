@@ -3,8 +3,8 @@ const dotenv = require("dotenv");
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import * as argon2 from "argon2";
-import userAuthModel from "../models/userAuth";
-import { handleErrors } from "../middlewares/errorHandler";
+import userAuthModel from "../../models/userAuth";
+import { handleErrors } from "../../middlewares/errorHandler";
 dotenv.config();
 const secret = process.env.TOKEN_SECRET;
 const expiresIn = 60 * 60;
@@ -52,8 +52,39 @@ export const loginUserAuth = async (req: Request, res: Response) => {
         lastName: user?.lastName,
         email: user?.email,
         isAdmin: user?.isAdmin,
+        createdAt: user?.createdAt,
+        updatedAt: user?.updatedAt,
       },
       token,
+    });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const updateuser = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { firstName, lastName, email, password, isAdmin } = req.body;
+  try {
+    const user: any = await userAuthModel.findByIdAndUpdate(
+      id,
+      {
+        $set: { firstName, lastName, email, password, isAdmin },
+      },
+      { new: true }
+    );
+    if (!user) return res.json({ error: "No user matched" });
+    console.log(user);
+    res.json({
+      user: {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        isAdmin: user?.isAdmin,
+        createdAt: user?.createdAt,
+        updatedAt: user?.updatedAt,
+      },
     });
   } catch (error) {
     const errors = handleErrors(error);

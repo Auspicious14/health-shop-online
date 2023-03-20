@@ -15,5 +15,5 @@ mongoose
   );
 app.use(cookieParser());
 app.use(express.json());
-app.use(router);
+app.use("/auth", router);
 app.use(productRouter);
