@@ -1,11 +1,11 @@
+const dotenv = require("dotenv");
+dotenv.config();
 import router from "./routes/userAuth";
 import productRouter from "./routes/product";
 const cookieParser = require("cookie-parser");
 import express from "express";
 const app = express();
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-dotenv.config();
 const port = process.env.PORT || 5000;
 const URI = process.env.MONGODB_URL;
 mongoose

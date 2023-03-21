@@ -28,6 +28,7 @@ export const createUserAuth = async (req: Request, res: Response) => {
     res.cookie("jwt", token, { httpOnly: true, maxAge: expiresIn * 1000 });
     res.json({
       user: {
+        _id: user?._id,
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
@@ -57,6 +58,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
     res.cookie("jwt", token, { httpOnly: true, maxAge: expiresIn * 1000 });
     res.json({
       user: {
+        _id: user?._id,
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
@@ -90,6 +92,7 @@ export const updateuser = async (req: Request, res: Response) => {
 
     res.json({
       user: {
+        _id: user?._id,
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
@@ -118,7 +121,7 @@ export const deleteUserAuth = async (req: Request, res: Response) => {
 export const getUserAuth = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const user: any = await userAuthModel.findById(id);
+    const user: any = await userAuthModel.findById(id).select("-password");
     res.json({ user });
   } catch (error) {
     const errors = handleErrors(error);
@@ -127,8 +130,15 @@ export const getUserAuth = async (req: Request, res: Response) => {
 };
 
 export const getUsersAuth = async (req: Request, res: Response) => {
+  const query = req.query.new;
   try {
-    const users: any = await userAuthModel.find();
+    const users: any = query
+      ? await userAuthModel
+          .find()
+          .select("-password")
+          .sort({ _id: -1 })
+          .limit(10)
+      : await userAuthModel.find().select("-password");
     res.json({ users });
   } catch (error) {
     const errors = handleErrors(error);

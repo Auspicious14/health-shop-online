@@ -1,6 +1,7 @@
 import { NextFunction, Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import userAuthModel from "../models/userAuth";
 dotenv.config();
 const secret: any = process.env.TOKEN_SECRET;
 export const verifyToken = async (
@@ -36,9 +37,11 @@ export const verifyTokenAndAdmin = (
   res: Response,
   next: NextFunction
 ) => {
-  verifyToken(req, res, () => {
-    console.log(req);
-    if (req.user.isAdmin) {
+  verifyToken(req, res, async () => {
+    const _id = req.params.id;
+    const user = await userAuthModel.findById({ _id });
+    console.log(user);
+    if (user?.isAdmin) {
       next();
     } else {
       res.json({ error: "invalid params" });
