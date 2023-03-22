@@ -39,7 +39,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const data: any = await productModel.findByIdAndDelete({ id });
+    const data: any = await productModel.findByIdAndDelete(id);
     res.json({ message: "product successfully deleted" });
   } catch (error) {
     const errors = handleErrors(error);
