@@ -9,7 +9,7 @@ import {
 import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
 const router = express.Router();
 
-router.post("/product/:id", verifyTokenAndAdmin, createProducts);
+router.post("/product", verifyTokenAndAdmin, createProducts);
 router.put("/product/:id", verifyTokenAndAdmin, updateProduct);
 router.get("/products", getProducts);
 router.get("/product/:id", getProduct);

@@ -41,8 +41,19 @@ export const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 export const getProducts = async (req: Request, res: Response) => {
+  const category = req.query.category;
+  const newP = req.query.new;
+  console.log(req.query);
   try {
-    const data: any = await productModel.find();
+    let data: any;
+    if (category) {
+      data = await productModel.find({
+        categories: { $in: [category] },
+      });
+    } else if (newP) {
+      data = await productModel.find().sort({ createdAt: -1 }).limit(2);
+    }
+    data = await productModel.find();
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
