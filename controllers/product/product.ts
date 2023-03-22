@@ -3,12 +3,9 @@ import { handleErrors } from "../../middlewares/errorHandler";
 import productModel from "../../models/products";
 
 export const createProducts = async (req: Request, res: Response) => {
-  // const { name, description, image, color } = req.body;
-
   try {
     const product: any = new productModel(req.body);
     const data: any = await product.save();
-    console.log(data);
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
@@ -18,17 +15,14 @@ export const createProducts = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
-
   try {
-    console.log(id, "iddddddddddd");
     const data: any = await productModel.findByIdAndUpdate(
-      req.params.id,
+      id,
       { $set: req.body },
       {
         new: true,
       }
     );
-    console.log(data);
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
