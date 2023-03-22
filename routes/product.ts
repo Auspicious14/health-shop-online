@@ -1,8 +1,15 @@
 import express from "express";
-import createProducts from "../controllers/product/createProduct";
-import getProducts from "../controllers/product/getProduct";
+import {
+  createProducts,
+  getProduct,
+  getProducts,
+  updateProduct,
+} from "../controllers/product/product";
+import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
 const router = express.Router();
 
-router.get("/product", getProducts);
-router.post("/product", createProducts);
+router.post("/product/:id", verifyTokenAndAdmin, createProducts);
+router.put("/product/:id", verifyTokenAndAdmin, updateProduct);
+router.get("/products", getProducts);
+router.get("/product/:id", getProduct);
 export default router;

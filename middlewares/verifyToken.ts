@@ -38,10 +38,11 @@ export const verifyTokenAndAdmin = (
   next: NextFunction
 ) => {
   verifyToken(req, res, async () => {
-    const _id = req.params.id;
+    const _id = req.user.id;
+    console.log(req.user.id);
     const user = await userAuthModel.findById({ _id });
     console.log(user);
-    if (user?.isAdmin) {
+    if (user?._id == req.user.id || user?.isAdmin) {
       next();
     } else {
       res.json({ error: "invalid params" });
