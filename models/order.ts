@@ -17,5 +17,5 @@ const orderSchema = new Schema(
   { timestamps: true }
 );
 
-const orderModel = mongoose.model("product", orderSchema);
+const orderModel = mongoose.model("order", orderSchema);
 export default orderModel;
