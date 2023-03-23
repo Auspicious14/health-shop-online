@@ -34,18 +34,18 @@ export const deleteCart = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     const data: any = await cartModel.findByIdAndDelete(id);
-    res.json({ message: "product successfully deleted" });
+    res.json({ message: "cart successfully deleted" });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
   }
 };
 
-export const getCart = async (req: Request, res: Response) => {
+export const getUserCart = async (req: Request, res: Response) => {
   const id = req.params.userId;
   try {
     const data: any = await cartModel.findOne({ id });
-    if (data._id != id) return res.json({ error: "product not found" });
+    if (data._id != id) return res.json({ error: "cart not found" });
     console.log(data);
     res.json({ data });
   } catch (error) {
