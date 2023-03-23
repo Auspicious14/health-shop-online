@@ -40,6 +40,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
 export const getProducts = async (req: Request, res: Response) => {
   const category = req.query.category;
   const newP = req.query.new;
@@ -51,7 +52,7 @@ export const getProducts = async (req: Request, res: Response) => {
         categories: { $in: [category] },
       });
     } else if (newP) {
-      data = await productModel.find().sort({ createdAt: -1 }).limit(2);
+      data = await productModel.find().sort({ createdAt: -1 }).limit(10);
     }
     data = await productModel.find();
     res.json({ data });
