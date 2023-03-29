@@ -53,8 +53,10 @@ export const getProducts = async (req: Request, res: Response) => {
       });
     } else if (newP) {
       data = await productModel.find().sort({ createdAt: -1 }).limit(10);
+    } else {
+      data = await productModel.find();
     }
-    data = await productModel.find();
+
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);

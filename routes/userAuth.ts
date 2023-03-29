@@ -18,6 +18,6 @@ router.post("/login", loginUserAuth);
 router.put("/update/:id", verifyTokenAndAuth, updateuser);
 router.delete("/delete/:id", verifyTokenAndAuth, deleteUserAuth);
 router.get("/users", getUsersAuth);
-router.get("/user/:id", verifyTokenAndAdmin, getUserAuth);
+router.get("/user/:id", getUserAuth);
 
 export default router;

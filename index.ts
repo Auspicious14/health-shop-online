@@ -5,21 +5,22 @@ import productRouter from "./routes/product";
 import cartRouter from "./routes/cart";
 import orderRoute from "./routes/order";
 const cookieParser = require("cookie-parser");
-import express from "express";
-const app = express();
-const mongoose = require("mongoose");
+import cors from "cors";
+import express, { Request, Response, NextFunction } from "express";
+export const appRoute = express();
 
-const port = process.env.PORT || 5000;
-const URI = process.env.MONGODB_URL;
-mongoose
-  .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() =>
-    app.listen(port, () => console.log(`server is listening on port ${port}`))
+appRoute.use(cors());
+appRoute.use((req: Request, res: Response, next: NextFunction) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow_Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
   );
-
-app.use(cookieParser());
-app.use(express.json());
-app.use("/auth", router);
-app.use(productRouter);
-app.use(cartRouter);
-app.use(orderRoute);
+  next();
+});
+appRoute.use(cookieParser());
+appRoute.use(express.json());
+appRoute.use("/auth", router);
+appRoute.use(productRouter);
+appRoute.use(cartRouter);
+appRoute.use(orderRoute);
