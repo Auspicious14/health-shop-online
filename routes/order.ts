@@ -13,7 +13,7 @@ import {
 } from "../middlewares/verifyToken";
 const router = express.Router();
 
-router.post("/order", verifyToken, PlaceOrder);
+router.post("/order", PlaceOrder);
 router.put("/order/:id", verifyTokenAndAdmin, updateOrder);
 router.delete("/order/:id", verifyTokenAndAdmin, deleteOrder);
 router.get("/order/:userId", verifyTokenAndAuth, getUserOrder);
