@@ -2,6 +2,7 @@ import { NextFunction, Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import userAuthModel from "../models/userAuth";
+import { handleErrors } from "./errorHandler";
 dotenv.config();
 const secret: any = process.env.TOKEN_SECRET;
 export const verifyToken = async (
@@ -19,33 +20,43 @@ export const verifyToken = async (
   return verifyToken;
 };
 
-export const verifyTokenAndAuth = (
+export const verifyTokenAndAuth = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
-  verifyToken(req, res, () => {
-    if (req.user.id === req.params.id) {
-      next();
-    } else {
-      res.json({ error: "invalid params" });
-    }
-  });
-};
-export const verifyTokenAndAdmin = (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  verifyToken(req, res, async () => {
-    const _id = req.user.id;
-    console.log(req.user.id);
-    const user = await userAuthModel.findById({ _id });
+  const { id } = req.params;
+  try {
+    const user = await userAuthModel.findById({ _id: id });
+    if (!user) return new Error("no user found");
     console.log(user);
-    if (user?._id == req.user.id || user?.isAdmin) {
+    if (user?._id == id) {
       next();
     } else {
-      res.json({ error: "invalid params" });
+      res.json({ error: "unauthorised user" });
     }
-  });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+export const verifyTokenAndAdmin = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  try {
+    const user = await userAuthModel.findById({ _id: id });
+    if (!user) return new Error("no user found");
+    console.log(user);
+    if (user?.isAdmin) {
+      next();
+    } else {
+      res.json({ error: "unauthorised user" });
+    }
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
 };
