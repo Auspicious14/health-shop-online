@@ -1,12 +1,14 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import * as argon2 from "argon2";
 import userAuthModel from "../../models/userAuth";
 import { handleErrors } from "../../middlewares/errorHandler";
+import { sendEmail } from "../../middlewares/email";
+import { generateOTP } from "../../middlewares/generateOTP";
 dotenv.config();
-const secret = process.env.TOKEN_SECRET;
+const clientURL = process.env.CLIENT_URL;
 const expiresIn = 60 * 60;
 
 export const createUserAuth = async (req: Request, res: Response) => {
@@ -129,6 +131,31 @@ export const getUsersAuth = async (req: Request, res: Response) => {
           .limit(10)
       : await userAuthModel.find().select("-password");
     res.json({ users });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const forgetPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  try {
+    const user: any = await userAuthModel.findOne({ email });
+    if (!user)
+      return res.json({
+        success: false,
+        message: "User with the email does not exist",
+      });
+    const { otp, otpDate } = generateOTP();
+    user.manageOTP.otp = otp;
+    user.manageOTP.otpDate = otpDate;
+    await user.save();
+    sendEmail(
+      user.email,
+      "Password Reset",
+      otp,
+      "./template/requestResetPassword.handlebars"
+    );
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });

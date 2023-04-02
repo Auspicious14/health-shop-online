@@ -5,9 +5,14 @@ const productSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
-    image: { type: Array },
+    images: [
+      { uri: { type: String } },
+      { name: { type: String } },
+      { type: { type: String } },
+    ],
     categories: { type: Array },
     price: { type: String, required: true },
+    brand: { type: String },
     size: { type: String },
     color: { type: String },
     rating: { type: Number },
