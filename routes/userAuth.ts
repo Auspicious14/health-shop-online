@@ -2,10 +2,13 @@ import express from "express";
 import {
   createUserAuth,
   deleteUserAuth,
+  forgetPassword,
   getUserAuth,
   getUsersAuth,
   loginUserAuth,
+  resetPassword,
   updateuser,
+  verifyOTP,
 } from "../controllers/auth/userAuth";
 import {
   verifyTokenAndAdmin,
@@ -19,5 +22,8 @@ router.put("/update/:id", verifyTokenAndAuth, updateuser);
 router.delete("/delete/:id", verifyTokenAndAuth, deleteUserAuth);
 router.get("/users", verifyTokenAndAdmin, getUsersAuth);
 router.get("/user/:id", getUserAuth);
+router.post("/forget", forgetPassword);
+router.post("/verify", verifyOTP);
+router.post("/reset", resetPassword);
 
 export default router;
