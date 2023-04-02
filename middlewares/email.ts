@@ -29,9 +29,9 @@ export const sendEmail = async (
     const compiledTemplate = handlebars.compile(source);
     const options = () => {
       return {
-        from: process.env.FROM_EMAIL,
+        from: `Auspicious: <${process.env.EMAIL_USERNAME}>`,
         to: email,
-        subject: subject,
+        subject,
         html: compiledTemplate(payload),
       };
     };
