@@ -161,3 +161,36 @@ export const forgetPassword = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const verifyOTP = async (req: Request, res: Response) => {
+  const { id, otp } = req.body;
+  try {
+    const user: any = userAuthModel.findById(id);
+    if (!user)
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    const { otp: totp, otpDate } = user.manageOTP;
+    const expiryDate = otpDate + 60 * 60 * 1000;
+
+    if (otp !== totp)
+      return res.json({
+        success: false,
+        message: "Incorrect OTP",
+      });
+
+    if (expiryDate < Date.now())
+      return res.json({
+        success: false,
+        message: "OTP expired",
+      });
+    res.json({
+      verified: true,
+      id,
+    });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
