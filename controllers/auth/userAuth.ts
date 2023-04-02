@@ -144,7 +144,7 @@ export const forgetPassword = async (req: Request, res: Response) => {
     if (!user)
       return res.json({
         success: false,
-        message: "User with the email does not exist",
+        message: "Account with the email does not exist",
       });
     const { otp, otpDate } = generateOTP();
     user.manageOTP.otp = otp;
@@ -169,7 +169,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
     if (!user)
       return res.json({
         success: false,
-        message: "User not found",
+        message: "Account not found",
       });
     const { otp: totp, otpDate } = user.manageOTP;
     const expiryDate = otpDate + 60 * 60 * 1000;
@@ -188,6 +188,38 @@ export const verifyOTP = async (req: Request, res: Response) => {
     res.json({
       verified: true,
       id,
+    });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const user: any = await userAuthModel.findOne(email);
+    if (!user)
+      return res.json({
+        success: false,
+        message: "Account not found",
+      });
+
+    const oldPassword = user.password;
+    const comparePassword = await argon2.verify(oldPassword, newPassword);
+
+    if (comparePassword)
+      return res.json({
+        success: false,
+        message: "You entered your old password",
+      });
+    const hashedPassword = await argon2.hash(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({
+      success: true,
+      message: "Password successfully changed.",
     });
   } catch (error) {
     const errors = handleErrors(error);
