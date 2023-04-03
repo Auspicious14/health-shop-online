@@ -150,12 +150,12 @@ export const forgetPassword = async (req: Request, res: Response) => {
     user.manageOTP.otp = otp;
     user.manageOTP.otpDate = otpDate;
     await user.save();
-    sendEmail(
-      user.email,
-      "Password Reset",
-      otp,
-      "./template/requestResetPassword.handlebars"
-    );
+    sendEmail(user.email, "Password Reset", otp);
+
+    res.json({
+      success: true,
+      message: `Check your mail for your verification code`,
+    });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -163,18 +163,18 @@ export const forgetPassword = async (req: Request, res: Response) => {
 };
 
 export const verifyOTP = async (req: Request, res: Response) => {
-  const { id, otp } = req.body;
+  const { email, otp: userOtp } = req.body;
   try {
-    const user: any = userAuthModel.findById(id);
+    const user: any = await userAuthModel.findOne({ email });
     if (!user)
       return res.json({
         success: false,
         message: "Account not found",
       });
-    const { otp: totp, otpDate } = user.manageOTP;
+    const { otp, otpDate } = user.manageOTP;
     const expiryDate = otpDate + 60 * 60 * 1000;
 
-    if (otp !== totp)
+    if (otp !== userOtp)
       return res.json({
         success: false,
         message: "Incorrect OTP",
@@ -187,7 +187,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
       });
     res.json({
       verified: true,
-      id,
     });
   } catch (error) {
     const errors = handleErrors(error);

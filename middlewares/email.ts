@@ -5,12 +5,7 @@ import path from "path";
 const handlebars = require("handlebars");
 dotenv.config();
 
-export const sendEmail = async (
-  email: any,
-  subject: any,
-  payload: any,
-  template: any
-) => {
+export const sendEmail = async (email: any, subject: any, text: any) => {
   try {
     // create reusable transporter object using the default SMTP transport
     const transporter = nodemailer.createTransport({
@@ -25,27 +20,20 @@ export const sendEmail = async (
       },
     });
 
-    const source = fs.readFileSync(path.join(__dirname, template), "utf8");
-    const compiledTemplate = handlebars.compile(source);
+    // const source = fs.readFileSync(path.join(__dirname, template), "utf8");
+    // const compiledTemplate = handlebars.compile(source);
     const options = () => {
       return {
         from: `Auspicious: <${process.env.EMAIL_USERNAME}>`,
         to: email,
         subject,
-        html: compiledTemplate(payload),
+        // html: compiledTemplate(payload),
+        text,
       };
     };
 
     // Send email
-    transporter.sendMail(options(), (error: any, res: any) => {
-      if (error) {
-        return error;
-      } else {
-        return res.json({
-          success: true,
-        });
-      }
-    });
+    transporter.sendMail(options());
   } catch (error) {
     return error;
   }
