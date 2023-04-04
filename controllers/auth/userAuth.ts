@@ -150,7 +150,8 @@ export const forgetPassword = async (req: Request, res: Response) => {
     user.manageOTP.otp = otp;
     user.manageOTP.otpDate = otpDate;
     await user.save();
-    sendEmail(user.email, "Password Reset", otp);
+    const message = `<div>Dear ${user?.lastName}</div> <br /> <div>Your verification code is ${otp}</div><br /> <div>Verification code will expire within 1hr</div>`;
+    sendEmail(user.email, "Requesting Password Reset", JSON.stringify(message));
 
     res.json({
       success: true,
@@ -198,7 +199,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   const { email, newPassword } = req.body;
 
   try {
-    const user: any = await userAuthModel.findOne(email);
+    const user: any = await userAuthModel.findOne({ email });
     if (!user)
       return res.json({
         success: false,

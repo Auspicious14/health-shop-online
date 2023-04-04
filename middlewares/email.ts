@@ -13,7 +13,7 @@ export const sendEmail = async (email: any, subject: any, text: any) => {
       secure: true,
       service: "gmail",
       // requireTLS: true,
-      port: 465,
+      // port: 456,
       auth: {
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD, // naturally, replace both with your real credentials or an application-specific password
@@ -27,13 +27,13 @@ export const sendEmail = async (email: any, subject: any, text: any) => {
         from: `Auspicious: <${process.env.EMAIL_USERNAME}>`,
         to: email,
         subject,
-        // html: compiledTemplate(payload),
-        text,
+        // html: `<div>${text}</div>`,
+        html: text,
       };
     };
 
     // Send email
-    transporter.sendMail(options());
+    await transporter.sendMail(options());
   } catch (error) {
     return error;
   }
