@@ -6,10 +6,12 @@ export const createProducts = async (req: Request, res: Response) => {
   try {
     const product: any = new productModel(req.body);
     const data: any = await product.save();
+    console.log(data);
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
+    console.log(error);
   }
 };
 

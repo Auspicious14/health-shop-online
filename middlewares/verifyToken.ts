@@ -41,15 +41,16 @@ export const verifyTokenAndAuth = async (
   }
 };
 export const verifyTokenAndAdmin = async (
-  req: any,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
+  const { id } = req.body;
+  console.log(id, "useriddddd");
   try {
     const user = await userAuthModel.findById({ _id: id });
-    if (!user) return new Error("no user found");
-    console.log(user);
+    if (!user) return res.json("no user found");
+    console.log(user, "userrrrr");
     if (user?.isAdmin) {
       next();
     } else {
