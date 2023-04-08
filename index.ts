@@ -18,8 +18,10 @@ appRoute.use((req: Request, res: Response, next: NextFunction) => {
   );
   next();
 });
+appRoute.use(express.json({ limit: "50mb" }));
+appRoute.use(express.urlencoded({ limit: "50mb", extended: true }));
 appRoute.use(cookieParser());
-appRoute.use(express.json());
+// appRoute.use(express.json());
 appRoute.use("/auth", router);
 appRoute.use(productRouter);
 appRoute.use(cartRouter);
