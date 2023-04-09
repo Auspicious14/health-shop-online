@@ -45,6 +45,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   const category = req.query.category;
+  const name = req.query.name;
   const newP = req.query.new;
   console.log(req.query);
   try {
@@ -55,6 +56,8 @@ export const getProducts = async (req: Request, res: Response) => {
       });
     } else if (newP) {
       data = await productModel.find().sort({ createdAt: -1 }).limit(10);
+    } else if (name) {
+      data = await productModel.find({ name });
     } else {
       data = await productModel.find();
     }

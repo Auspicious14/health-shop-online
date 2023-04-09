@@ -13,6 +13,8 @@ const productSchema = new Schema(
     categories: { type: Array },
     price: { type: String, required: true },
     quantity: { type: String },
+    soldout: { type: Boolean, default: false },
+    instock: { type: Boolean },
     brand: { type: String },
     size: { type: String },
     color: { type: String },
