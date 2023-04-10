@@ -10,9 +10,9 @@ import {
 import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
 const router = express.Router();
 
-router.post("/product", verifyTokenAndAdmin, createBlog);
-router.put("/product/:id", verifyTokenAndAdmin, updateblog);
-router.get("/products", getblogs);
-router.get("/product/:id", getOneblog);
-router.delete("/product/:id", deleteblog);
+router.post("/blog", verifyTokenAndAdmin, createBlog);
+router.put("/blog/:id", verifyTokenAndAdmin, updateblog);
+router.get("/blogs", getblogs);
+router.get("/blog/:id", getOneblog);
+router.delete("/blog/:id", deleteblog);
 export default router;
