@@ -1,10 +1,25 @@
+const dotenv = require("dotenv");
+dotenv.config();
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import blogModel from "../../models/blog";
-
+import { mapFiles } from "../../middlewares/file";
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
 export const createBlog = async (req: Request, res: Response) => {
+  const { title, description, images } = req.body;
+
   try {
-    const blog: any = new blogModel(req.body);
+    const files = await mapFiles(images);
+    const blog: any = new blogModel({
+      title,
+      description,
+      images: files,
+    });
     const data: any = await blog.save();
     console.log(data);
     res.json({ data });

@@ -6,9 +6,11 @@ const blogSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     images: [
-      { uri: { type: String } },
-      { name: { type: String } },
-      { type: { type: String } },
+      {
+        uri: { type: String },
+        name: { type: String },
+        type: { type: String },
+      },
     ],
   },
   { timestamps: true }
