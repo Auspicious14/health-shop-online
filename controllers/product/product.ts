@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import productModel from "../../models/products";
+import { mapFiles } from "../../middlewares/file";
 
 export const createProducts = async (req: Request, res: Response) => {
+  const { images, ...values } = req.body;
   try {
-    const product: any = new productModel(req.body);
+    const files = await mapFiles(images);
+    const product: any = new productModel({ ...values, images: files });
     const data: any = await product.save();
-    console.log(data);
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
@@ -17,10 +19,12 @@ export const createProducts = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const { images, ...values } = req.body;
   try {
+    const files = await mapFiles(images);
     const data: any = await productModel.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: { ...values, images: files } },
       {
         new: true,
       }
