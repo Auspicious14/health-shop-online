@@ -1,12 +1,23 @@
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import cartModel from "../../models/cart";
+import productModel from "../../models/products";
+import userAuthModel from "../../models/userAuth";
 
 export const AddToCart = async (req: Request, res: Response) => {
+  console.log(req.body);
+  const { product, userId } = req.body;
   try {
-    const cart: any = new cartModel(req.body);
-    const data = await cart.save();
-    console.log(data);
+    const id = await userAuthModel.findById({ _id: userId });
+    if (!id) return res.json({ success: false, message: "UnAuthorised user" });
+    const cart: any = new cartModel({ product, userId: id });
+    const { productId } = cart?.product;
+    if (productId) {
+      const product = await productModel.find({ _id: productId });
+      const data = await cart.save();
+      console.log(data);
+      res.json({ product });
+    }
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
