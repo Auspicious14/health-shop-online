@@ -7,17 +7,19 @@ import userAuthModel from "../../models/userAuth";
 export const AddToCart = async (req: Request, res: Response) => {
   console.log(req.body);
   const { product, userId } = req.body;
+  const { id, quantity } = product;
   try {
-    const id = await userAuthModel.findById({ _id: userId });
-    if (!id) return res.json({ success: false, message: "UnAuthorised user" });
-    const cart: any = new cartModel({ product, userId: id });
-    const { productId } = cart?.product;
-    if (productId) {
-      const product = await productModel.find({ _id: productId });
-      const data = await cart.save();
-      console.log(data);
-      res.json({ product });
-    }
+    // const id = await userAuthModel.findById({ _id: userId });
+    // if (!id) return res.json({ success: false, message: "UnAuthorised user" });
+    const productt = await productModel.findById(id);
+    const cart: any = new cartModel({
+      product: { product: productt, quantity },
+      userId,
+    });
+    // const { productId } = cart?.product;
+    const data = await cart.save();
+    console.log(data);
+    res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -53,12 +55,16 @@ export const deleteCart = async (req: Request, res: Response) => {
 };
 
 export const getUserCart = async (req: Request, res: Response) => {
-  const id = req.params.userId;
+  const { userId } = req.params;
   try {
-    const data: any = await cartModel.findOne({ id });
-    if (data._id != id) return res.json({ error: "cart not found" });
-    console.log(data);
+    const data: any = await cartModel.find({ userId: userId }).exec();
+    // if (data.userId != userId) return res.json({ error: "cart not found" });
+    console.log(data, "cartttt");
+    // const product = await productModel.findById({
+    //   _id: data.product.productId,
+    // });
     res.json({ data });
+    // console.log(data, "producttt");
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });

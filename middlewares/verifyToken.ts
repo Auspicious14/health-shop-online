@@ -25,11 +25,11 @@ export const verifyTokenAndAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
+  const { userId } = req.params;
+  const id = userId;
   try {
     const user = await userAuthModel.findById({ _id: id });
     if (!user) return new Error("no user found");
-    console.log(user);
     if (user?._id == id) {
       next();
     } else {
