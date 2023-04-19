@@ -43,7 +43,7 @@ export const deleteCart = async (req: Request, res: Response) => {
   try {
     const data: any = await cartModel.findByIdAndDelete(id);
     if (data) {
-      res.json({ message: "cart successfully deleted" });
+      res.json({ data, message: "cart successfully deleted" });
     }
   } catch (error) {
     const errors = handleErrors(error);
