@@ -62,7 +62,7 @@ export const getUserOrder = async (req: Request, res: Response) => {
 
 export const getAllUserOrder = async (req: Request, res: Response) => {
   try {
-    const data: any = orderModel.find();
+    const data: any = await orderModel.find();
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
