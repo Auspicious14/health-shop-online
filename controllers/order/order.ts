@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import orderModel from "../../models/order";
+import cartModel from "../../models/cart";
 
 export const PlaceOrder = async (req: Request, res: Response) => {
+  console.log(req.body);
+  const { id, amount, address } = req.body;
   try {
-    const order: any = new orderModel(req.body);
-    const data = await order.save();
-    console.log(data);
+    const cart = await cartModel.find({ userId: id });
+    if (cart) {
+      const order: any = new orderModel({ amount, address, cart, userId: id });
+      const data = await order.save();
+      res.json({ data });
+    }
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
