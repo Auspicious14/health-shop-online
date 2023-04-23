@@ -7,7 +7,7 @@ const orderSchema = new Schema(
     cart: { type: Object },
     amount: { type: Number, required: String },
     address: { type: Object, required: true },
-    status: { type: String, default: "pending" },
+    status: { type: String, default: "new" },
   },
   { timestamps: true }
 );

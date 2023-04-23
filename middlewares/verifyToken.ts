@@ -46,11 +46,9 @@ export const verifyTokenAndAdmin = async (
   next: NextFunction
 ) => {
   const { id } = req.body;
-  console.log(id, "useriddddd");
   try {
     const user = await userAuthModel.findById({ _id: id });
     if (!user) return res.json("no user found");
-    console.log(user, "userrrrr");
     if (user?.isAdmin) {
       next();
     } else {
