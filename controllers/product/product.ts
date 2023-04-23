@@ -40,7 +40,10 @@ export const deleteProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     const data: any = await productModel.findByIdAndDelete(id);
-    res.json({ message: "product successfully deleted" });
+    if (data) {
+      const products = await productModel.find();
+      res.json({ data: products, message: "product successfully deleted" });
+    }
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
