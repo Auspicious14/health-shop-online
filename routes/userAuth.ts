@@ -7,6 +7,7 @@ import {
   getUsersAuth,
   loginUserAuth,
   resetPassword,
+  updatePassword,
   updateuser,
   verifyOTP,
 } from "../controllers/auth/userAuth";
@@ -25,5 +26,6 @@ router.get("/user/:id", getUserAuth);
 router.post("/forget", forgetPassword);
 router.post("/verify", verifyOTP);
 router.post("/reset", resetPassword);
+router.post("/update/password", updatePassword);
 
 export default router;

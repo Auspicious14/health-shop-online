@@ -226,3 +226,23 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const updatePassword = async (req: Request, res: Response) => {
+  const { oldPassword, newPassword, id } = req.body;
+  try {
+    const user: any = await userAuthModel.findById(id);
+    if (user) {
+      const old = await argon2.verify(user.password, oldPassword);
+      if (!old) return res.json({ error: "old password does not match" });
+      const newPass = await argon2.hash(newPassword);
+      user.password = newPass;
+      await user.save();
+      res.json({ message: "Password Updated" });
+    } else {
+      res.json({ message: "Unauthorised user" });
+    }
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
