@@ -51,7 +51,10 @@ export const deleteblog = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     const data: any = await blogModel.findByIdAndDelete(id);
-    res.json({ message: "blog successfully deleted" });
+    if (data) {
+      const blogs = await blogModel.find();
+      res.json({ data: blogs, message: "blog successfully deleted" });
+    }
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
