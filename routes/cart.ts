@@ -2,6 +2,7 @@ import express from "express";
 import {
   AddToCart,
   deleteCart,
+  emptyCart,
   getAllUserCart,
   getUserCart,
   updateCart,
@@ -16,6 +17,7 @@ const router = express.Router();
 router.post("/cart", AddToCart);
 router.put("/cart/:id", updateCart);
 router.delete("/cart/:id", deleteCart);
+router.delete("/cart/", emptyCart);
 router.get("/cart/:userId", verifyTokenAndAuth, getUserCart);
 router.get("/carts", verifyTokenAndAdmin, getAllUserCart);
 
