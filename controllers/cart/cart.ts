@@ -73,13 +73,13 @@ export const getAllUserCart = async (req: Request, res: Response) => {
 };
 
 export const emptyCart = async (req: Request, res: Response) => {
-  const { id } = req.body;
-
+  const { id } = req.params;
   try {
     const cart = await cartModel.find({ userId: id });
     if (cart) {
-      const deleteCart = await cartModel.deleteMany({ userId: id });
-      res.json({ message: "cart is empty" });
+      await cartModel.deleteMany({ userId: id });
+      const data = await cartModel.find();
+      res.json({ data, message: "cart is empty" });
     }
   } catch (error) {
     const errors = handleErrors(error);
