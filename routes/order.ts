@@ -5,6 +5,7 @@ import {
   updateOrder,
   getAllUserOrder,
   getUserOrder,
+  payment,
 } from "../controllers/order/order";
 import {
   verifyToken,
@@ -18,5 +19,6 @@ router.put("/order/:id", verifyTokenAndAdmin, updateOrder);
 router.delete("/order/:id", verifyTokenAndAdmin, deleteOrder);
 router.get("/order/:userId", verifyTokenAndAuth, getUserOrder);
 router.get("/orders", getAllUserOrder);
+router.get("/payment", payment);
 
 export default router;
