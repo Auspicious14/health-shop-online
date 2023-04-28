@@ -19,6 +19,6 @@ router.put("/order/:id", verifyTokenAndAdmin, updateOrder);
 router.delete("/order/:id", verifyTokenAndAdmin, deleteOrder);
 router.get("/order/:userId", verifyTokenAndAuth, getUserOrder);
 router.get("/orders", getAllUserOrder);
-router.get("/payment", payment);
+router.post("/payment", payment);
 
 export default router;

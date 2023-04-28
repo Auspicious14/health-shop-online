@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import orderModel from "../../models/order";
 import cartModel from "../../models/cart";
-// const Paystack = require("paystack")("secret_key");
+const https = require("https");
 import dotenv from "dotenv";
 dotenv.config();
+
 export const PlaceOrder = async (req: Request, res: Response) => {
   console.log(req.body);
   const { id, amount, address } = req.body;
@@ -92,14 +93,12 @@ export const orderStats = async (req: Request, res: Response) => {
   }
 };
 
-export const payment = async (req: Request, res: Response) => {
-  const https = require("https");
-
+export const payment = async (request: Request, response: Response) => {
   const params = JSON.stringify({
-    email: "customer@email.com",
-    amount: "20000",
+    email: request.body.email,
+    amount: request.body.amount * 100,
   });
-
+  // console.log(params);
   const options = {
     hostname: "api.paystack.co",
     port: 443,
@@ -120,11 +119,14 @@ export const payment = async (req: Request, res: Response) => {
       });
 
       res.on("end", () => {
-        console.log(JSON.parse(data));
+        response.json(JSON.parse(data));
+        // console.log(JSON.parse(data));
       });
     })
     .on("error", (error: any) => {
       console.error(error);
+      const err = handleErrors(error);
+      response.json(err);
     });
 
   paystackRequest.write(params);
