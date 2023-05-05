@@ -52,19 +52,35 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   const category = req.query.category;
+  const brand = req.query.brand;
   const name = req.query.name;
   const newP = req.query.new;
+  const maxPrice = req.query.maxPrice;
+  const minPrice = req.query.minPrice;
+  const color = req.query.color;
   console.log(req.query);
   try {
     let data: any;
     if (category) {
-      data = await productModel.find({
-        categories: { $in: [category] },
-      });
+      data = await productModel
+        .find({
+          categories: { $in: [category] },
+        })
+        .exec();
     } else if (newP) {
-      data = await productModel.find().sort({ createdAt: -1 }).limit(10);
+      data = await productModel.find().sort({ createdAt: -1 }).limit(10).exec();
     } else if (name) {
-      data = await productModel.find({ name });
+      data = await productModel.find({ name }).exec();
+    } else if (brand) {
+      data = await productModel.find({ brand: brand }).exec();
+      console.log(data);
+    } else if (maxPrice && minPrice) {
+      data = await productModel
+        .find({ price: { $gte: maxPrice, $lte: minPrice } })
+        .exec();
+    } else if (color) {
+      data = await productModel.find({ color }).exec();
+      console.log(data);
     } else {
       data = await productModel.find();
     }
