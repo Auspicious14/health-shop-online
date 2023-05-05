@@ -51,12 +51,9 @@ export const updateReview = async (req: Request, res: Response) => {
 
 export const getReview = async (req: Request, res: Response) => {
   const { productId } = req.params;
-
   try {
     const review: any = await reviewModel.find({ productId });
-    if (productId !== review?.productId)
-      res.json({ success: false, message: "Review not found" });
-
+    if (!review) res.json({ success: false, message: "Review not found" });
     res.json({
       success: true,
       message: "Success",
