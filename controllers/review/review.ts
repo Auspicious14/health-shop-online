@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import reviewModel from "../../models/review";
 import { handleErrors } from "../../middlewares/errorHandler";
+import userAuthModel from "../../models/userAuth";
 
 export const createReview = async (req: Request, res: Response) => {
   try {
@@ -52,8 +53,13 @@ export const updateReview = async (req: Request, res: Response) => {
 export const getReview = async (req: Request, res: Response) => {
   const { productId } = req.params;
   try {
-    const review: any = await reviewModel.find({ productId });
+    let review = await reviewModel.find({ productId });
     if (!review) res.json({ success: false, message: "Review not found" });
+    let data = review?.map(
+      async (r) =>
+        r?.userId && (await userAuthModel.findById({ _id: r?.userId }).exec())
+    );
+    console.log(data, "dataaaaaaa");
     res.json({
       success: true,
       message: "Success",
