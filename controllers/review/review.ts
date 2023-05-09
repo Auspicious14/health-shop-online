@@ -4,8 +4,20 @@ import { handleErrors } from "../../middlewares/errorHandler";
 import userAuthModel from "../../models/userAuth";
 
 export const createReview = async (req: Request, res: Response) => {
+  const { userId, title, description, rating, productId } = req.body;
   try {
-    const review: any = await reviewModel.create(req.body);
+    let user;
+    if (userId) {
+      user = await userAuthModel.findById({ _id: userId }).select("-password");
+    }
+    const review: any = await reviewModel.create({
+      description,
+      productId,
+      title,
+      rating,
+      user,
+    });
+    console.log(user);
     if (review) {
       res.json({
         success: true,
@@ -55,11 +67,6 @@ export const getReview = async (req: Request, res: Response) => {
   try {
     let review = await reviewModel.find({ productId });
     if (!review) res.json({ success: false, message: "Review not found" });
-    let data = review?.map(
-      async (r) =>
-        r?.userId && (await userAuthModel.findById({ _id: r?.userId }).exec())
-    );
-    console.log(data, "dataaaaaaa");
     res.json({
       success: true,
       message: "Success",
