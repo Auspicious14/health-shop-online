@@ -17,7 +17,7 @@ export const createReview = async (req: Request, res: Response) => {
       rating,
       user,
     });
-    console.log(user);
+    // console.log(user);
     if (review) {
       res.json({
         success: true,
@@ -67,10 +67,19 @@ export const getReview = async (req: Request, res: Response) => {
   try {
     let review = await reviewModel.find({ productId });
     if (!review) res.json({ success: false, message: "Review not found" });
+
+    const totalProductRating: number = review
+      .map((r: any) => {
+        return r.rating;
+      })
+      .reduce((a: any, b: any) => a + b, 0);
+    const totalReview: number = review.length;
+    const overAllRating: number = totalProductRating / totalReview;
+    console.log(overAllRating);
     res.json({
       success: true,
       message: "Success",
-      data: review,
+      data: { review, total: overAllRating },
     });
   } catch (error) {
     const errors = handleErrors(error);
