@@ -33,6 +33,10 @@
     "paystack-api": "^2.0.6",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2",
-    "validator": "^13.9.0"
+    "validator": "^13.9.0",
+    "webpack": "^5.88.2"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4"
   }
 }

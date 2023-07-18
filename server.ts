@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 import { appRoute } from "./index";
 
 const port = process.env.PORT || 5000;
-const URI = process.env.MONGODB_URL;
+const URI: any = process.env.MONGODB_URL;
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() =>
