@@ -37,16 +37,20 @@ export const updateProduct = async (req: Request, res: Response) => {
 };
 
 export const deleteProduct = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const { id } = req.params;
   try {
+    if (id == "" || !id)
+      return res.status(400).json({ success: false, message: "Invalid value" });
     const data: any = await productModel.findByIdAndDelete(id);
     if (data) {
-      const products = await productModel.find();
-      res.json({ data: products, message: "product successfully deleted" });
+      res.json({ success: true, message: "Product deleted" });
     }
   } catch (error) {
     const errors = handleErrors(error);
-    res.json({ errors });
+    res.json({
+      success: false,
+      message: { errors, error },
+    });
   }
 };
 

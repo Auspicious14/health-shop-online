@@ -8,7 +8,7 @@ import {
 const reviewRoute = express.Router();
 
 reviewRoute.post("/review", createReview);
-reviewRoute.post("/review/:id", updateReview);
+reviewRoute.put("/review/:id", updateReview);
 reviewRoute.get("/review/:productId", getReview);
 
 export default reviewRoute;
