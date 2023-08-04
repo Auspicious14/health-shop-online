@@ -2,11 +2,13 @@ import { Request, Response } from "express";
 import categoryModel from "../../models/category";
 import { handleErrors } from "../../middlewares/errorHandler";
 import userAuthModel from "../../models/userAuth";
+import { mapFiles } from "../../middlewares/file";
 
 export const createCategory = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, images } = req.body;
 
   try {
+    const files = await mapFiles(images);
     const catName = await categoryModel.findOne({ name }).exec();
     if (catName)
       return res
@@ -14,6 +16,7 @@ export const createCategory = async (req: Request, res: Response) => {
         .json({ success: false, message: "Category name already exist" });
     const category: any = await categoryModel.create({
       name,
+      images: files,
     });
     res.json({
       success: true,
@@ -31,12 +34,16 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const updatecategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, images } = req.body;
   try {
+    let files = images;
+    if (images) {
+      files = await mapFiles(images);
+    }
     const category: any = await categoryModel.findByIdAndUpdate(
       id,
       {
-        $set: { name },
+        $set: { name, images: files },
       },
       { new: true }
     );
