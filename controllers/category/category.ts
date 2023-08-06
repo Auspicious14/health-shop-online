@@ -14,14 +14,14 @@ export const createCategory = async (req: Request, res: Response) => {
       return res
         .status(409)
         .json({ success: false, message: "Category name already exist" });
-    const category: any = await categoryModel.create({
+    const data: any = await categoryModel.create({
       name,
       images: files,
     });
     res.json({
       success: true,
       message: "category created",
-      data: category,
+      data,
     });
   } catch (error) {
     const errors = handleErrors(error);
@@ -40,7 +40,7 @@ export const updatecategory = async (req: Request, res: Response) => {
     if (images) {
       files = await mapFiles(images);
     }
-    const category: any = await categoryModel.findByIdAndUpdate(
+    const data: any = await categoryModel.findByIdAndUpdate(
       id,
       {
         $set: { name, images: files },
@@ -48,13 +48,12 @@ export const updatecategory = async (req: Request, res: Response) => {
       { new: true }
     );
 
-    if (!category)
-      res.json({ success: false, message: "Error updating category" });
+    if (!data) res.json({ success: false, message: "Error updating category" });
 
     res.json({
       success: true,
       message: "category Updated",
-      data: category,
+      data,
     });
   } catch (error) {
     const errors = handleErrors(error);
@@ -68,13 +67,13 @@ export const updatecategory = async (req: Request, res: Response) => {
 export const getCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    let category = await categoryModel.findOne({ id });
-    if (!category) res.json({ success: false, message: "category not found" });
+    let data = await categoryModel.findOne({ id });
+    if (!data) res.json({ success: false, message: "category not found" });
 
     res.json({
       success: true,
       message: "Success",
-      data: { category },
+      data,
     });
   } catch (error) {
     const errors = handleErrors(error);
