@@ -104,13 +104,13 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    let category = await categoryModel.find();
-    if (!category) res.json({ success: false, message: "category not found" });
+    let data = await categoryModel.find();
+    if (!data) res.json({ success: false, message: "category not found" });
 
     res.json({
       success: true,
       message: "Success",
-      data: { category },
+      data,
     });
   } catch (error) {
     const errors = handleErrors(error);
