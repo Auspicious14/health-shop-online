@@ -11,8 +11,7 @@ export const createProducts = async (req: Request, res: Response) => {
     const data: any = await product.save();
     res.json({ data });
   } catch (error) {
-    const errors = handleErrors(error);
-    res.json({ errors });
+    res.json({ error });
     console.log(error);
   }
 };
@@ -31,8 +30,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     );
     res.json({ data });
   } catch (error) {
-    const errors = handleErrors(error);
-    res.json({ errors });
+    res.json({ error });
   }
 };
 
@@ -46,10 +44,9 @@ export const deleteProduct = async (req: Request, res: Response) => {
       res.json({ success: true, message: "Product deleted" });
     }
   } catch (error) {
-    const errors = handleErrors(error);
     res.json({
       success: false,
-      message: { errors, error },
+      error,
     });
   }
 };
@@ -62,7 +59,6 @@ export const getProducts = async (req: Request, res: Response) => {
   const maxPrice = req.query.maxPrice;
   const minPrice = req.query.minPrice;
   const color = req.query.color;
-  console.log(req.query);
   try {
     let data: any;
     if (category) {
@@ -77,22 +73,19 @@ export const getProducts = async (req: Request, res: Response) => {
       data = await productModel.find({ name }).exec();
     } else if (brand) {
       data = await productModel.find({ brand: brand }).exec();
-      console.log(data);
     } else if (maxPrice && minPrice) {
       data = await productModel
         .find({ price: { $gte: maxPrice, $lte: minPrice } })
         .exec();
     } else if (color) {
       data = await productModel.find({ color }).exec();
-      console.log(data);
     } else {
       data = await productModel.find();
     }
 
     res.json({ data });
   } catch (error) {
-    const errors = handleErrors(error);
-    res.json({ errors });
+    res.json({ error });
   }
 };
 
@@ -104,7 +97,6 @@ export const getProduct = async (req: Request, res: Response) => {
     console.log(data);
     res.json({ data });
   } catch (error) {
-    const errors = handleErrors(error);
-    res.json({ errors });
+    res.json({ error });
   }
 };
