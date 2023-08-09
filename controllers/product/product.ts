@@ -52,13 +52,8 @@ export const deleteProduct = async (req: Request, res: Response) => {
 };
 
 export const getProducts = async (req: Request, res: Response) => {
-  const category = req.query.category;
-  const brand = req.query.brand;
-  const name = req.query.name;
-  const newP = req.query.new;
-  const maxPrice = req.query.maxPrice;
-  const minPrice = req.query.minPrice;
-  const color = req.query.color;
+  const { category, brand, newArrival, name, maxPrice, minPrice, color } =
+    req.query;
   try {
     let data: any;
     if (category) {
@@ -67,7 +62,7 @@ export const getProducts = async (req: Request, res: Response) => {
           categories: { $in: [category] },
         })
         .exec();
-    } else if (newP) {
+    } else if (newArrival) {
       data = await productModel.find().sort({ createdAt: -1 }).limit(10).exec();
     } else if (name) {
       data = await productModel.find({ name }).exec();
