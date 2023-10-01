@@ -54,8 +54,6 @@ export const getUserOrder = async (req: Request, res: Response) => {
   const id = req.params.userId;
   try {
     const data: any = await orderModel.find({ userId: id });
-    if (data._id != id) return res.json({ error: "order not found" });
-    console.log(data);
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
