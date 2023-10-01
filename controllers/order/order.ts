@@ -60,6 +60,17 @@ export const getUserOrder = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+export const getOneOrder = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const data: any = await orderModel.findById(id);
+    if (data?._id != id) return res.json({ error: "order not found" });
+    res.json({ data });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
 
 export const getAllUserOrder = async (req: Request, res: Response) => {
   try {

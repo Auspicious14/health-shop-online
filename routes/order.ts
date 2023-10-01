@@ -6,6 +6,7 @@ import {
   getAllUserOrder,
   getUserOrder,
   payment,
+  getOneOrder,
 } from "../controllers/order/order";
 import {
   verifyToken,
@@ -18,6 +19,7 @@ router.post("/order", PlaceOrder);
 router.put("/order/:id", verifyTokenAndAdmin, updateOrder);
 router.delete("/order/:id", verifyTokenAndAdmin, deleteOrder);
 router.get("/order/:userId", verifyTokenAndAuth, getUserOrder);
+router.get("/order/:id", getOneOrder);
 router.get("/orders", getAllUserOrder);
 router.post("/payment", payment);
 
