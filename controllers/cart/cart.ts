@@ -5,21 +5,24 @@ import productModel from "../../models/products";
 import mongoose, { AnyArray } from "mongoose";
 
 export const AddToCart = async (req: Request, res: Response) => {
-  const { productId: id, userId, quantity } = req.body;
-  console.log(req.body);
   try {
-    const productt: any = await productModel.findById(id);
+    const { productId, userId, quantity } = req.body;
+    console.log(req.body);
+    const cartOnDb = await cartModel.findOne({ productId });
+    console.log(cartOnDb);
+    if (cartOnDb)
+      return res.status(400).json({ error: "Product already exist in cart" });
+    const productt: any = await productModel.findById(productId);
     const amount = quantity * parseFloat(productt.price);
     console.log(productt, "amounttt");
     if (!userId) return res.status(401).json({ error: "unauthorised" });
     const cart: any = new cartModel({
-      productId: id,
+      productId,
       amount,
       quantity,
       userId,
     });
     const data = await cart.save();
-    console.log(data);
     res.json({ data: { productt, data } });
   } catch (error) {
     const errors = handleErrors(error);
@@ -29,16 +32,15 @@ export const AddToCart = async (req: Request, res: Response) => {
 
 export const updateCart = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const { quantity, productId: _id } = req.body;
-  console.log(req.body);
   try {
-    const productt: any = await productModel.findById(_id);
+    const { quantity, productId } = req.body;
+    const productt: any = await productModel.findById(productId);
     const amount = quantity * parseFloat(productt.price);
-    const data: any = await cartModel.findById(id);
+    let data: any = await cartModel.findById(id);
     data.quantity = quantity;
     data.amount = amount;
     await data.save();
-    res.json({ productt, data });
+    res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -75,7 +77,7 @@ export const getUserCart = async (req: Request, res: Response) => {
     //   })
     // );
 
-    const data = await cartModel
+    const cart = await cartModel
       .aggregate([
         {
           $match: { userId: userObjectId },
@@ -106,7 +108,7 @@ export const getUserCart = async (req: Request, res: Response) => {
       ])
       .exec();
 
-    res.json({ data });
+    res.json({ data: cart });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
