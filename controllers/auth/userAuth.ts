@@ -7,6 +7,7 @@ import userAuthModel from "../../models/userAuth";
 import { handleErrors } from "../../middlewares/errorHandler";
 import { sendEmail } from "../../middlewares/email";
 import { generateOTP } from "../../middlewares/generateOTP";
+import StoreModel from "../../models/store";
 dotenv.config();
 const clientURL = process.env.CLIENT_URL;
 const expiresIn = 60 * 60;
@@ -39,8 +40,31 @@ export const createUserAuth = async (req: Request, res: Response) => {
 };
 
 export const loginUserAuth = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, accountType } = req.body;
   try {
+    // Store Owner Login
+    if (accountType == "storeOwner") {
+      const store: any = await StoreModel.findOne({ email });
+      if (!store?.email) return res.json({ error: "Account Not found" });
+      const comparePassword: boolean = await argon2.verify(
+        store.password,
+        password
+      );
+      if (!comparePassword)
+        return res.json({ success: false, error: "Wrong Password" });
+      res.json({
+        user: {
+          _id: store?._id,
+          firstName: store?.firstName,
+          lastName: store?.lastName,
+          email: store?.email,
+          isAdmin: store?.isAdmin,
+          createdAt: store?.createdAt,
+          updatedAt: store?.updatedAt,
+        },
+      });
+    }
+    // Normal User Login
     const user: any = await userAuthModel.findOne({ email });
     if (!user.email) return res.json({ error: "Account Not found" });
     const comparePassword: boolean = await argon2.verify(
