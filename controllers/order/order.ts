@@ -107,7 +107,6 @@ export const payment = async (request: Request, response: Response) => {
     email: request.body.email,
     amount: request.body.amount * 100,
   });
-  // console.log(params);
   const options = {
     hostname: "api.paystack.co",
     port: 443,

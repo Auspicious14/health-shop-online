@@ -15,6 +15,11 @@ const userAuthSchema = new Schema(
     },
     password: { type: String, required: true, minLength: 6 },
     isAdmin: { type: Boolean, default: false },
+    accountType: {
+      admin: { type: String },
+      storeOwner: { type: String },
+      user: { type: String, default: true },
+    },
     manageOTP: {
       otp: { type: Number },
       otpDate: { type: Number },
