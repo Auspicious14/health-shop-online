@@ -10,6 +10,7 @@ import {
   resetPassword,
   updatePassword,
   updateuser,
+  validateInviteLink,
   verifyOTP,
 } from "../controllers/auth/userAuth";
 import {
@@ -20,14 +21,15 @@ const router = express.Router();
 
 router.post("/signup", createUserAuth);
 router.post("/login", loginUserAuth);
-router.put("/update/:id", verifyTokenAndAuth, updateuser);
-router.delete("/delete/:id", verifyTokenAndAuth, deleteUserAuth);
-router.get("/users", verifyTokenAndAdmin, getUsersAuth);
-router.get("/user/:id", getUserAuth);
 router.post("/forget", forgetPassword);
 router.post("/verify", verifyOTP);
 router.post("/reset", resetPassword);
 router.post("/update/password", updatePassword);
+router.post("/validate", validateInviteLink);
 router.get("/invite", generateInviteLink);
+router.get("/users", verifyTokenAndAdmin, getUsersAuth);
+router.get("/user/:id", getUserAuth);
+router.put("/update/:id", verifyTokenAndAuth, updateuser);
+router.delete("/delete/:id", verifyTokenAndAuth, deleteUserAuth);
 
 export default router;

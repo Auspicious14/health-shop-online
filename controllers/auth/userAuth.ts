@@ -10,6 +10,7 @@ import { generateOTP } from "../../middlewares/generateOTP";
 import StoreModel from "../../models/store";
 import expressAsyncHandler from "express-async-handler";
 import { generateRandomWords } from "../../middlewares/inviteLink";
+import inviteCodeModel from "../../models/inviteLink";
 dotenv.config();
 const clientURL = process.env.CLIENT_URL;
 const expiresIn = 60 * 60;
@@ -276,10 +277,29 @@ export const updatePassword = async (req: Request, res: Response) => {
 
 export const generateInviteLink = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const magicLink = generateRandomWords();
-    res.status(200).json({
-      success: true,
-      data: magicLink,
-    });
+    const magicCode = generateRandomWords();
+    if (magicCode) {
+      const data = await inviteCodeModel.create({ inviteCode: magicCode });
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    }
+  }
+);
+
+export const validateInviteLink = expressAsyncHandler(
+  async (req: any, res: any) => {
+    const { inviteCode } = req.body;
+    console.log(inviteCode);
+    if (!inviteCode) return res.json("No code sent");
+    const data = await inviteCodeModel.findOne({ inviteCode });
+    console.log(data);
+    if (!data)
+      return res
+        .status(400)
+        .json({ success: false, message: "Code not found" });
+
+    res.status(200).json({ valid: true });
   }
 );
