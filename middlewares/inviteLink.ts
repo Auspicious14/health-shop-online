@@ -1,5 +1,5 @@
-export const generateInviteLink = () => {
+export const generateRandomWords = () => {
   const letters = "abcdefghijklmnopqrstuvwxyz";
-  const magicLink = Math.random().toString(letters?.length).slice(3);
+  const magicLink = Math.random().toString(36).slice(2);
   return magicLink;
 };

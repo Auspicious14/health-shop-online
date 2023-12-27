@@ -3,6 +3,7 @@ import {
   createUserAuth,
   deleteUserAuth,
   forgetPassword,
+  generateInviteLink,
   getUserAuth,
   getUsersAuth,
   loginUserAuth,
@@ -27,5 +28,6 @@ router.post("/forget", forgetPassword);
 router.post("/verify", verifyOTP);
 router.post("/reset", resetPassword);
 router.post("/update/password", updatePassword);
+router.get("/invite", generateInviteLink);
 
 export default router;

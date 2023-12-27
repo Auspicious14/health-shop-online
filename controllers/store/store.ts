@@ -1,42 +1,41 @@
-import { Express, Request, Response } from "express";
+import { Request, Response } from "express";
 import * as argon2 from "argon2";
 import StoreModel from "../../models/store";
 import { mapFiles } from "../../middlewares/file";
+import expressAsyncHandler from "express-async-handler";
 
-export const createStore = async (req: Request, res: Response) => {
+export const createStore = expressAsyncHandler(async (req: any, res: any) => {
   const { password, email, ...values } = req.body;
-  try {
-    const existingStore = await StoreModel.findOne({ email });
 
-    if (existingStore)
-      return res.status(401).json({
-        success: false,
-        message: "Store Already exist",
-      });
-    const hashedPassword = await argon2.hash(password);
-    const store = await StoreModel.create({
-      email,
-      password: hashedPassword,
-      ...values,
+  // res.status(400).json({ success: false, error });
+  const existingStore = await StoreModel.findOne({ email });
+
+  if (existingStore)
+    return res.status(401).json({
+      success: false,
+      message: "Store Already exist",
     });
-    return res.status(200).json({
-      success: true,
-      message: "Store created successfully",
-      store: {
-        _id: store?._id,
-        firstName: store?.firstName,
-        lastName: store?.lastName,
-        email: store?.email,
-        phoneNumber: store?.phoneNumber,
-        whatsAppNumber: store?.whatsAppNumber,
-        storePhoneNumber: store?.storePhoneNumber,
-        storeName: store?.storeName,
-      },
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, error });
-  }
-};
+  const hashedPassword = await argon2.hash(password);
+  const store = await StoreModel.create({
+    email,
+    password: hashedPassword,
+    ...values,
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Store created successfully",
+    store: {
+      _id: store?._id,
+      firstName: store?.firstName,
+      lastName: store?.lastName,
+      email: store?.email,
+      phoneNumber: store?.phoneNumber,
+      whatsAppNumber: store?.whatsAppNumber,
+      storePhoneNumber: store?.storePhoneNumber,
+      storeName: store?.storeName,
+    },
+  });
+});
 
 export const updateStore = async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -62,14 +61,12 @@ export const updateStore = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllStores = async (req: Request, res: Response) => {
-  try {
+export const getAllStores = expressAsyncHandler(
+  async (req: Request, res: Response) => {
     const stores = await StoreModel.find();
     res.json({ success: true, data: stores });
-  } catch (error) {
-    res.status(400).json({ success: false, error });
   }
-};
+);
 
 export const getUserStore = async (req: Request, res: Response) => {
   const id = req.params.id;

@@ -8,6 +8,8 @@ import { handleErrors } from "../../middlewares/errorHandler";
 import { sendEmail } from "../../middlewares/email";
 import { generateOTP } from "../../middlewares/generateOTP";
 import StoreModel from "../../models/store";
+import expressAsyncHandler from "express-async-handler";
+import { generateRandomWords } from "../../middlewares/inviteLink";
 dotenv.config();
 const clientURL = process.env.CLIENT_URL;
 const expiresIn = 60 * 60;
@@ -271,3 +273,13 @@ export const updatePassword = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const generateInviteLink = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const magicLink = generateRandomWords();
+    res.status(200).json({
+      success: true,
+      data: magicLink,
+    });
+  }
+);
