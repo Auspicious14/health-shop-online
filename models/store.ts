@@ -14,9 +14,10 @@ const StoreSchema = new Schema(
       lowercase: true,
       validate: isEmail,
     },
-    phoneNumber: { type: String, required: true },
+    // phoneNumber: { type: String, required: true },
     storePhoneNumber: { type: String, required: true },
     whatsAppNumber: { type: String, required: false },
+    accepted: { type: Boolean },
     images: [
       {
         uri: { type: String },

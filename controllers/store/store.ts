@@ -29,7 +29,7 @@ export const createStore = expressAsyncHandler(async (req: any, res: any) => {
       firstName: store?.firstName,
       lastName: store?.lastName,
       email: store?.email,
-      phoneNumber: store?.phoneNumber,
+      // phoneNumber: store?.phoneNumber,
       whatsAppNumber: store?.whatsAppNumber,
       storePhoneNumber: store?.storePhoneNumber,
       storeName: store?.storeName,

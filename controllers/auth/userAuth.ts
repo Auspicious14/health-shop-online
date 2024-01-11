@@ -61,7 +61,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           firstName: store?.firstName,
           lastName: store?.lastName,
           email: store?.email,
-          isAdmin: store?.isAdmin,
+          isAdmin: false,
           createdAt: store?.createdAt,
           updatedAt: store?.updatedAt,
         },
