@@ -12,8 +12,8 @@ import { acceptStore, rejectStore } from "../controllers/store/accept";
 const router = express.Router();
 
 router.post("/store", createStore);
-router.post("/store/:id", updateStore);
-router.delete("/store/delete/:id", verifyTokenAndAdmin, deleteStore);
+router.put("/store/:id", updateStore);
+router.delete("/store/delete/:id", deleteStore);
 router.get("/stores", getAllStores);
 router.get("/store/:id", getUserStore);
 router.post("/store/accept", acceptStore);

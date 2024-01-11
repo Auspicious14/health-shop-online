@@ -17,7 +17,7 @@ const StoreSchema = new Schema(
     // phoneNumber: { type: String, required: true },
     storePhoneNumber: { type: String, required: true },
     whatsAppNumber: { type: String, required: false },
-    accepted: { type: Boolean },
+    accepted: { type: Boolean, default: false },
     images: [
       {
         uri: { type: String },

@@ -33,7 +33,7 @@ export const sendEmail = async (email: any, subject: any, text: any) => {
     };
 
     // Send email
-    await transporter.sendMail(options());
+    return await transporter.sendMail(options());
   } catch (error) {
     return error;
   }

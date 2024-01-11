@@ -29,6 +29,7 @@ export const createStore = expressAsyncHandler(async (req: any, res: any) => {
       firstName: store?.firstName,
       lastName: store?.lastName,
       email: store?.email,
+      accepted: store?.accepted,
       // phoneNumber: store?.phoneNumber,
       whatsAppNumber: store?.whatsAppNumber,
       storePhoneNumber: store?.storePhoneNumber,
@@ -48,7 +49,7 @@ export const updateStore = async (req: Request, res: Response) => {
     const files = await mapFiles(images);
     const store = await StoreModel.findByIdAndUpdate(
       id,
-      { $set: { images: files, values } },
+      { $set: { images: files, ...values } },
       { new: true }
     );
 
