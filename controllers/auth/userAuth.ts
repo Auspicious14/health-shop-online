@@ -16,7 +16,7 @@ const clientURL = process.env.CLIENT_URL;
 const expiresIn = 60 * 60;
 
 export const createUserAuth = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, accountType } = req.body;
   try {
     const hashedPassword = await argon2.hash(password);
     const user: any = await userAuthModel.create({
@@ -24,6 +24,7 @@ export const createUserAuth = async (req: Request, res: Response) => {
       lastName,
       email,
       password: hashedPassword,
+      accountType,
     });
     res.json({
       user: {
@@ -34,6 +35,7 @@ export const createUserAuth = async (req: Request, res: Response) => {
         isAdmin: user?.isAdmin,
         createdAt: user?.createdAt,
         updatedAt: user?.updatedAt,
+        accountType: user?.accountType,
       },
     });
   } catch (error) {
@@ -47,7 +49,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
   try {
     // Store Owner Login
     if (accountType == "storeOwner") {
-      const store: any = await StoreModel.findOne({ email });
+      const store = await StoreModel.findOne({ email });
       if (!store?.email) return res.json({ error: "Account Not found" });
       const comparePassword: boolean = await argon2.verify(
         store.password,
@@ -55,6 +57,11 @@ export const loginUserAuth = async (req: Request, res: Response) => {
       );
       if (!comparePassword)
         return res.json({ success: false, error: "Wrong Password" });
+      if (store?.accepted === false)
+        return res.json({
+          success: false,
+          message: "Your store has not been verified",
+        });
       res.json({
         user: {
           _id: store?._id,
@@ -64,6 +71,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           isAdmin: false,
           createdAt: store?.createdAt,
           updatedAt: store?.updatedAt,
+          accepted: store?.accepted,
         },
       });
     } else {
