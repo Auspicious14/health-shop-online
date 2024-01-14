@@ -296,6 +296,24 @@ export const generateInviteLink = expressAsyncHandler(
   }
 );
 
+export const deleteInviteLink = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const link = req.params;
+    const deleteMagicLink = await inviteCodeModel.findOneAndDelete(link);
+    if (!deleteMagicLink) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid link",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Link Expired",
+    });
+  }
+);
+
 export const validateInviteLink = expressAsyncHandler(
   async (req: any, res: any) => {
     const { inviteCode } = req.body;

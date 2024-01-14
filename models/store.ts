@@ -16,15 +16,34 @@ const StoreSchema = new Schema(
     },
     // phoneNumber: { type: String, required: true },
     storePhoneNumber: { type: String, required: true },
+    storeAddress: { type: String, required: true },
     whatsAppNumber: { type: String, required: false },
     accepted: { type: Boolean, default: false },
+    industryType: { type: String },
     images: [
       {
-        uri: { type: String },
-        name: { type: String },
-        type: { type: String },
+        uri: { type: String, required: true },
+        name: { type: String, required: true },
+        type: { type: String, required: true },
       },
     ],
+    identificationImage: [
+      {
+        uri: { type: String, required: true },
+        name: { type: String, required: true },
+        type: { type: String, required: true },
+      },
+    ],
+    socialMedia: [
+      {
+        name: { type: String },
+        link: { type: String },
+      },
+    ],
+    policy: { type: String },
+    bankName: { type: String },
+    bankAccountNumber: { type: String },
+    bankAccountName: { type: String },
     password: { type: String, required: true, minLength: 6 },
   },
   { timestamps: true }

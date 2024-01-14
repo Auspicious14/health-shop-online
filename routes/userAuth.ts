@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createUserAuth,
+  deleteInviteLink,
   deleteUserAuth,
   forgetPassword,
   generateInviteLink,
@@ -27,6 +28,7 @@ router.post("/reset", resetPassword);
 router.post("/update/password", updatePassword);
 router.post("/validate", validateInviteLink);
 router.get("/invite", generateInviteLink);
+router.delete("/delete/invite/:link", deleteInviteLink);
 router.get("/users", verifyTokenAndAdmin, getUsersAuth);
 router.get("/user/:id", getUserAuth);
 router.put("/update/:id", verifyTokenAndAuth, updateuser);
