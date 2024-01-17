@@ -19,6 +19,7 @@ export const createStore = expressAsyncHandler(async (req: any, res: any) => {
   const store = await StoreModel.create({
     email,
     password: hashedPassword,
+    accountType: "storeOwner",
     ...values,
   });
   return res.status(200).json({
@@ -30,6 +31,7 @@ export const createStore = expressAsyncHandler(async (req: any, res: any) => {
       lastName: store?.lastName,
       email: store?.email,
       accepted: store?.accepted,
+      accountType: store?.accountType,
       // phoneNumber: store?.phoneNumber,
       whatsAppNumber: store?.whatsAppNumber,
       storePhoneNumber: store?.storePhoneNumber,
@@ -40,16 +42,17 @@ export const createStore = expressAsyncHandler(async (req: any, res: any) => {
 
 export const updateStore = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const { images, ...values } = req.body;
+  const { images, identificationImage, ...values } = req.body;
 
   try {
     const existingStore = await StoreModel.findById(id);
     if (!existingStore)
       return res.json({ success: false, message: "Store does not exist" });
     const files = await mapFiles(images);
+    const idImage = await mapFiles(identificationImage);
     const store = await StoreModel.findByIdAndUpdate(
       id,
-      { $set: { images: files, ...values } },
+      { $set: { images: files, identificationImage: idImage, ...values } },
       { new: true }
     );
 
