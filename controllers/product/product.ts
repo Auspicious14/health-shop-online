@@ -61,10 +61,8 @@ export const deleteProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Invalid value" });
 
     const data: any = await productModel.findOneAndDelete({ _id: id, storeId });
-    console.log(data, "deleted producttt");
     if (data) {
       res.json({ success: true, message: "Product deleted" });
-      console.log("Product deleted");
     }
   } catch (error) {
     res.json({

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 const { isEmail } = require("validator");
 const Schema = mongoose.Schema;
 
-const StoreSchema = new Schema(
+export const StoreSchema = new Schema(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -55,3 +55,38 @@ const StoreSchema = new Schema(
 
 const StoreModel = mongoose.model("store", StoreSchema);
 export default StoreModel;
+
+export interface IStore {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  whatsAppNumber: string;
+  storePhoneNumber: string;
+  description: string;
+  storeName: string;
+  accepted: boolean;
+  policy: string;
+  bankName: string;
+  bankAccountName: string;
+  bankAccountNumber: string;
+  storeType: string;
+  businessNumber: string;
+  storeAddress: string;
+  socialMedia: IStoreSocialMedia[];
+  images: IStoreFile[];
+  identificationImage: IStoreFile[];
+}
+
+export interface IStoreFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+export interface IStoreSocialMedia {
+  platform: string;
+  profileName: string;
+  profileLink: string;
+}
