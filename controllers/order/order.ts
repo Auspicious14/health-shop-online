@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import orderModel from "../../models/order";
 import cartModel from "../../models/cart";
+import StoreModel, { IStore } from "../../models/store";
 const https = require("https");
 import dotenv from "dotenv";
 dotenv.config();
@@ -24,9 +25,14 @@ export const PlaceOrder = async (req: Request, res: Response) => {
 
 export const updateOrder = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const { storeId } = req.query;
   try {
-    const data: any = await orderModel.findByIdAndUpdate(
-      id,
+    const store: IStore | null = await StoreModel.findById(storeId);
+    if (store?._id != storeId)
+      return res.status(400).json({ success: false, message: "Unathoriszed" });
+
+    const data: any = await orderModel.findOneAndUpdate(
+      { id, storeId },
       { $set: req.body },
       {
         new: true,
@@ -41,8 +47,13 @@ export const updateOrder = async (req: Request, res: Response) => {
 
 export const deleteOrder = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const { storeId } = req.query;
   try {
-    const data: any = await orderModel.findByIdAndDelete(id);
+    const store: IStore | null = await StoreModel.findById(storeId);
+    if (store?._id != storeId)
+      return res.status(400).json({ success: false, message: "Unathoriszed" });
+
+    const data: any = await orderModel.findOneAndDelete({ id, storeId });
     res.json({ message: "order successfully deleted" });
   } catch (error) {
     const errors = handleErrors(error);
@@ -62,8 +73,13 @@ export const getUserOrder = async (req: Request, res: Response) => {
 };
 export const getOneOrder = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { storeId } = req.query;
   try {
-    const data: any = await orderModel.findById(id);
+    const store: IStore | null = await StoreModel.findById(storeId);
+    if (store?._id != storeId)
+      return res.status(400).json({ success: false, message: "Unathoriszed" });
+
+    const data: any = await orderModel.findOne({ id, storeId });
     if (data?._id != id) return res.json({ error: "order not found" });
     res.json({ data });
   } catch (error) {
@@ -73,8 +89,13 @@ export const getOneOrder = async (req: Request, res: Response) => {
 };
 
 export const getAllUserOrder = async (req: Request, res: Response) => {
+  const { storeId } = req.query;
   try {
-    const data: any = await orderModel.find();
+    const store: IStore | null = await StoreModel.findById(storeId);
+    if (store?._id != storeId)
+      return res.status(400).json({ success: false, message: "Unathoriszed" });
+
+    const data: any = await orderModel.find({ storeId });
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);

@@ -4,7 +4,12 @@ const Schema = mongoose.Schema;
 const orderSchema = new Schema(
   {
     userId: { type: String, required: true },
-    cart: { type: Object },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "store",
+      required: true,
+    },
+    cart: { type: Object, ref: "cart" },
     amount: { type: Number, required: String },
     address: { type: Object, required: true },
     status: { type: String, default: "new" },
