@@ -69,9 +69,30 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           lastName: store?.lastName,
           email: store?.email,
           isAdmin: false,
+          accountType: store?.accountType,
           createdAt: store?.createdAt,
           updatedAt: store?.updatedAt,
           accepted: store?.accepted,
+        },
+      });
+    } else if (accountType == "Admin") {
+      // Normal Admin Login
+      const user: any = await userAuthModel.findOne({ email });
+      if (!user.email) return res.json({ error: "Account Not found" });
+      const comparePassword: boolean = await argon2.verify(
+        user.password,
+        password
+      );
+      if (!comparePassword) return res.json({ error: "Wrong password" });
+      res.json({
+        user: {
+          _id: user?._id,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          email: user?.email,
+          isAdmin: true,
+          createdAt: user?.createdAt,
+          updatedAt: user?.updatedAt,
         },
       });
     } else {
@@ -89,7 +110,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           firstName: user?.firstName,
           lastName: user?.lastName,
           email: user?.email,
-          isAdmin: user?.isAdmin,
+          isAdmin: false,
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
