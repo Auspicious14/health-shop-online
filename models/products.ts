@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
@@ -5,6 +6,11 @@ const productSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "store",
+      required: true,
+    },
     images: [
       { uri: { type: String }, name: { type: String }, type: { type: String } },
     ],
