@@ -32,7 +32,7 @@ export const updateOrder = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Unathoriszed" });
 
     const data: any = await orderModel.findOneAndUpdate(
-      { id, storeId },
+      { _id: id, storeId },
       { $set: req.body },
       {
         new: true,
@@ -53,7 +53,7 @@ export const deleteOrder = async (req: Request, res: Response) => {
     if (store?._id != storeId)
       return res.status(400).json({ success: false, message: "Unathoriszed" });
 
-    const data: any = await orderModel.findOneAndDelete({ id, storeId });
+    const data: any = await orderModel.findOneAndDelete({ _id: id, storeId });
     res.json({ message: "order successfully deleted" });
   } catch (error) {
     const errors = handleErrors(error);
@@ -79,7 +79,7 @@ export const getOneOrder = async (req: Request, res: Response) => {
     if (store?._id != storeId)
       return res.status(400).json({ success: false, message: "Unathoriszed" });
 
-    const data: any = await orderModel.findOne({ id, storeId });
+    const data: any = await orderModel.findOne({ _id: id, storeId });
     if (data?._id != id) return res.json({ error: "order not found" });
     res.json({ data });
   } catch (error) {

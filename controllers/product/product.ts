@@ -37,7 +37,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     const files = await mapFiles(images);
     const data: any = await productModel.findOneAndUpdate(
-      { id, storeId },
+      { _id: id, storeId },
       { $set: { ...values, images: files, storeId } },
       {
         new: true,
@@ -127,7 +127,7 @@ export const getProduct = async (req: Request, res: Response) => {
     if (store?._id != storeId)
       return res.status(400).json({ success: false, message: "Unathorized" });
 
-    const data: any = await productModel.findOne({ id, storeId });
+    const data: any = await productModel.findOne({ _id: id, storeId });
     if (data._id != id) return res.json({ error: "product not found" });
     console.log(data);
     res.json({ data });
