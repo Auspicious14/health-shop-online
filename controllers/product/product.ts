@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
-import { handleErrors } from "../../middlewares/errorHandler";
 import productModel from "../../models/products";
 import { mapFiles } from "../../middlewares/file";
 import StoreModel, { IStore } from "../../models/store";
-import { ObjectId } from "mongodb";
 
 export const createProducts = async (req: Request, res: Response) => {
   const { storeId, images, ...values } = req.body;
-  console.log(req.body);
   try {
     const store: IStore | null = await StoreModel.findById(storeId);
     if (store?._id != storeId)
@@ -84,9 +81,11 @@ export const getProducts = async (req: Request, res: Response) => {
     color,
   } = req.query;
   try {
-    const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathorized" });
+    if (storeId) {
+      const store: IStore | null = await StoreModel.findById(storeId);
+      if (store?._id != storeId)
+        return res.status(400).json({ success: false, message: "Unathorized" });
+    }
 
     let data: any;
     if (category) {
@@ -109,8 +108,10 @@ export const getProducts = async (req: Request, res: Response) => {
         .exec();
     } else if (color) {
       data = await productModel.find({ storeId, color }).exec();
+    } else if (storeId) {
+      data = await productModel.find({ storeId }).exec();
     } else {
-      data = await productModel.find({ storeId });
+      data = await productModel.find();
     }
 
     res.json({ data });

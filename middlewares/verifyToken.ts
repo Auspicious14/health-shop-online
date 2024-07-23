@@ -4,15 +4,17 @@ import dotenv from "dotenv";
 import userAuthModel from "../models/userAuth";
 import { handleErrors } from "./errorHandler";
 dotenv.config();
-const secret: any = process.env.TOKEN_SECRET;
+// const secret: any = process.env.TOKEN_SECRET;
+const JWT_SECRET: any = process.env.JWT_SECRET;
+
 export const verifyToken = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
-  const token: any = req.cookies.jwt;
+  const token: any = req.cookies.token;
   if (!token) return res.json({ error: "Not authorized" });
-  const verifyToken = jwt.verify(token, secret, (err: any, user: any) => {
+  const verifyToken = jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
     if (err) return res.json({ error: "invalid token" });
     req.user = user;
     next();
@@ -40,19 +42,25 @@ export const verifyTokenAndAuth = async (
     res.json({ errors });
   }
 };
+
 export const verifyTokenAndAdmin = async (
-  req: Request,
+  req: any,
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.body;
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: "User not authenticated" });
+
   try {
-    const user = await userAuthModel.findById({ _id: id });
-    if (!user) return res.json("no user found");
-    if (user?.isAdmin) {
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const user = await userAuthModel.findById(decoded.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.isAdmin) {
+      req.user = user;
       next();
     } else {
-      res.json({ error: "unauthorised user" });
+      res.status(403).json({ error: "Unauthorized user" });
     }
   } catch (error) {
     const errors = handleErrors(error);

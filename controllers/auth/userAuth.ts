@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 import { Request, Response } from "express";
-import crypto from "crypto";
+import jwt, { Secret } from "jsonwebtoken";
 import * as argon2 from "argon2";
 import userAuthModel from "../../models/userAuth";
 import { handleErrors } from "../../middlewares/errorHandler";
@@ -11,8 +11,9 @@ import StoreModel from "../../models/store";
 import expressAsyncHandler from "express-async-handler";
 import { generateRandomWords } from "../../middlewares/inviteLink";
 import inviteCodeModel from "../../models/inviteLink";
+
 dotenv.config();
-const clientURL = process.env.CLIENT_URL;
+const JWT_SECRET: any = process.env.JWT_SECRET;
 const expiresIn = 60 * 60;
 
 export const createUserAuth = async (req: Request, res: Response) => {
@@ -62,6 +63,15 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           success: false,
           message: "Your store has not been verified",
         });
+
+      const token = jwt.sign({ id: store._id, isAdmin: false }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
       res.json({
         user: {
           _id: store?._id,
@@ -84,6 +94,16 @@ export const loginUserAuth = async (req: Request, res: Response) => {
         password
       );
       if (!comparePassword) return res.json({ error: "Wrong password" });
+
+      const token = jwt.sign({ id: user._id, isAdmin: true }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
       res.json({
         user: {
           _id: user?._id,
@@ -104,6 +124,16 @@ export const loginUserAuth = async (req: Request, res: Response) => {
         password
       );
       if (!comparePassword) return res.json({ error: "Wrong password" });
+
+      const token = jwt.sign({ id: user._id, isAdmin: true }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
       res.json({
         user: {
           _id: user?._id,

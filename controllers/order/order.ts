@@ -95,7 +95,11 @@ export const getAllUserOrder = async (req: Request, res: Response) => {
     if (store?._id != storeId)
       return res.status(400).json({ success: false, message: "Unathoriszed" });
 
-    const data: any = await orderModel.find({ storeId });
+    let data: any;
+    if (storeId) {
+      data = await orderModel.find({ storeId });
+    }
+    data = await orderModel.find();
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
