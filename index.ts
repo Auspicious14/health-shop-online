@@ -14,7 +14,7 @@ import cors from "cors";
 import express, { Request, Response, NextFunction } from "express";
 export const appRoute = express();
 
-appRoute.use(cors());
+appRoute.use(cors({ credentials: true }));
 appRoute.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(

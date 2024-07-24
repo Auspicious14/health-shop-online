@@ -64,9 +64,13 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           message: "Your store has not been verified",
         });
 
-      const token = jwt.sign({ id: store._id, isAdmin: false }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign(
+        { id: store._id, isAdmin: accountType !== "Admin" },
+        JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -84,6 +88,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           updatedAt: store?.updatedAt,
           accepted: store?.accepted,
         },
+        token,
       });
     } else if (accountType == "Admin") {
       // Normal Admin Login
@@ -95,15 +100,19 @@ export const loginUserAuth = async (req: Request, res: Response) => {
       );
       if (!comparePassword) return res.json({ error: "Wrong password" });
 
-      const token = jwt.sign({ id: user._id, isAdmin: true }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-
+      const token = jwt.sign(
+        { id: user._id, isAdmin: accountType == "Admin" },
+        JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
+
       res.json({
         user: {
           _id: user?._id,
@@ -114,6 +123,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
+        token,
       });
     } else {
       // Normal User Login
@@ -125,9 +135,13 @@ export const loginUserAuth = async (req: Request, res: Response) => {
       );
       if (!comparePassword) return res.json({ error: "Wrong password" });
 
-      const token = jwt.sign({ id: user._id, isAdmin: true }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign(
+        { id: user._id, isAdmin: accountType !== "Admin" },
+        JWT_SECRET,
+        {
+          expiresIn: "7d",
+        }
+      );
 
       res.cookie("token", token, {
         httpOnly: true,
@@ -144,6 +158,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
           createdAt: user?.createdAt,
           updatedAt: user?.updatedAt,
         },
+        token,
       });
     }
   } catch (error) {
