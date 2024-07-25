@@ -98,8 +98,9 @@ export const getAllUserOrder = async (req: Request, res: Response) => {
     let data: any;
     if (storeId) {
       data = await orderModel.find({ storeId });
+    } else {
+      data = await orderModel.find();
     }
-    data = await orderModel.find();
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
