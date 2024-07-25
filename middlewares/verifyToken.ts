@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import userAuthModel from "../models/userAuth";
 import { handleErrors } from "./errorHandler";
+import StoreModel from "../models/store";
 dotenv.config();
 // const secret: any = process.env.TOKEN_SECRET;
 const JWT_SECRET: any = process.env.JWT_SECRET;
@@ -48,21 +49,23 @@ export const verifyTokenAndAdmin = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.token;
-  console.log(token, "token");
+  const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token) return res.status(401).json({ error: "User not authenticated" });
 
   try {
     const decoded: any = jwt.verify(token, JWT_SECRET);
-    const user = await userAuthModel.findById(decoded.id);
+    let user: any;
+
+    if (decoded.isAdmin) {
+      user = await userAuthModel.findById(decoded.id);
+    } else {
+      user = await StoreModel.findById(decoded.id);
+    }
+
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (user.isAdmin) {
-      req.user = user;
-      next();
-    } else {
-      res.status(403).json({ error: "Unauthorized user" });
-    }
+    req.user = user;
+    next();
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });

@@ -65,7 +65,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
         });
 
       const token = jwt.sign(
-        { id: store._id, isAdmin: accountType !== "Admin" },
+        { id: store._id, isAdmin: accountType === "Admin" },
         JWT_SECRET,
         {
           expiresIn: "7d",
@@ -101,7 +101,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
       if (!comparePassword) return res.json({ error: "Wrong password" });
 
       const token = jwt.sign(
-        { id: user._id, isAdmin: accountType == "Admin" },
+        { id: user._id, isAdmin: accountType === "Admin" },
         JWT_SECRET,
         {
           expiresIn: "7d",
@@ -136,7 +136,7 @@ export const loginUserAuth = async (req: Request, res: Response) => {
       if (!comparePassword) return res.json({ error: "Wrong password" });
 
       const token = jwt.sign(
-        { id: user._id, isAdmin: accountType !== "Admin" },
+        { id: user._id, isAdmin: accountType === "Admin" },
         JWT_SECRET,
         {
           expiresIn: "7d",
