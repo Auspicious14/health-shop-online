@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 const { isEmail } = require("validator");
 const Schema = mongoose.Schema;
 
@@ -53,10 +53,10 @@ export const StoreSchema = new Schema(
   { timestamps: true }
 );
 
-const StoreModel = mongoose.model("store", StoreSchema);
+const StoreModel = mongoose.model<IStore>("store", StoreSchema);
 export default StoreModel;
 
-export interface IStore {
+export interface IStore extends Document {
   _id: string;
   firstName: string;
   lastName: string;
@@ -77,6 +77,10 @@ export interface IStore {
   socialMedia: IStoreSocialMedia[];
   images: IStoreFile[];
   identificationImage: IStoreFile[];
+  createdAt: string;
+  updatedAt: string;
+  accountType: string;
+  password: string;
 }
 
 export interface IStoreFile {

@@ -214,7 +214,10 @@ export const deleteUserAuth = async (req: Request, res: Response) => {
 export const getUserAuth = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const user: any = await userAuthModel.findById(id).select("-password");
+    let user: any = await userAuthModel.findById(id).select("-password");
+    if (!user) {
+      user = await StoreModel.findById(id).select("-password");
+    }
     res.json({ user });
   } catch (error) {
     const errors = handleErrors(error);
@@ -225,7 +228,7 @@ export const getUserAuth = async (req: Request, res: Response) => {
 export const getUsersAuth = async (req: Request, res: Response) => {
   const query = req.query.new;
   try {
-    const users: any = query
+    const users = query
       ? await userAuthModel
           .find()
           .select("-password")
