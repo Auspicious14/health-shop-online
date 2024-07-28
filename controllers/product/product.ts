@@ -80,55 +80,47 @@ export const getProducts = async (req: Request, res: Response) => {
     minPrice,
     color,
   } = req.query;
+
   try {
     if (storeId) {
-      const store: IStore | null = await StoreModel.findById(storeId);
-      if (store?._id != storeId)
-        return res.status(400).json({ success: false, message: "Unathorized" });
+      const store = await StoreModel.findById(storeId);
+      if (!store) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Unauthorized" });
+      }
     }
 
-    let data: any;
-    if (category) {
+    const query: any = {};
+    if (storeId) query.storeId = storeId;
+    if (category) query.categories = { $in: [category] };
+    if (name) query.name = name;
+    if (brand) query.brand = brand;
+    if (color) query.color = color;
+    if (maxPrice && minPrice) query.price = { $gte: minPrice, $lte: maxPrice };
+
+    let data;
+
+    if (newArrival) {
       data = await productModel
-        .find({ storeId, categories: { $in: [category] } })
-        .exec();
-    } else if (newArrival) {
-      data = await productModel
-        .find({ storeId })
+        .find(query)
         .sort({ createdAt: -1 })
         .limit(10)
         .exec();
-    } else if (name) {
-      data = await productModel.find({ storeId, name }).exec();
-    } else if (brand) {
-      data = await productModel.find({ storeId, brand: brand }).exec();
-    } else if (maxPrice && minPrice) {
-      data = await productModel
-        .find({ storeId, price: { $gte: maxPrice, $lte: minPrice } })
-        .exec();
-    } else if (color) {
-      data = await productModel.find({ storeId, color }).exec();
-    } else if (storeId) {
-      data = await productModel.find({ storeId }).exec();
     } else {
-      data = await productModel.find();
+      data = await productModel.find(query).exec();
     }
 
-    res.json({ data });
-  } catch (error) {
-    res.json({ error });
+    res.json({ success: true, data });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
 export const getProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const { storeId } = req.query;
   try {
-    const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathorized" });
-
-    const data: any = await productModel.findOne({ _id: id, storeId });
+    const data: any = await productModel.findOne({ _id: id });
     if (data._id != id) return res.json({ error: "product not found" });
     console.log(data);
     res.json({ data });
@@ -136,3 +128,42 @@ export const getProduct = async (req: Request, res: Response) => {
     res.json({ error });
   }
 };
+
+// try {
+//   if (storeId) {
+//     const store: IStore | null = await StoreModel.findById(storeId);
+//     if (store?._id != storeId)
+//       return res.status(400).json({ success: false, message: "Unathorized" });
+//   }
+
+//   let data: any;
+//   if (category) {
+//     data = await productModel
+//       .find({ storeId, categories: { $in: [category] } })
+//       .exec();
+//   } else if (newArrival) {
+//     data = await productModel
+//       .find({ storeId })
+//       .sort({ createdAt: -1 })
+//       .limit(10)
+//       .exec();
+//   } else if (name) {
+//     data = await productModel.find({ storeId, name }).exec();
+//   } else if (brand) {
+//     data = await productModel.find({ storeId, brand: brand }).exec();
+//   } else if (maxPrice && minPrice) {
+//     data = await productModel
+//       .find({ storeId, price: { $gte: maxPrice, $lte: minPrice } })
+//       .exec();
+//   } else if (color) {
+//     data = await productModel.find({ storeId, color }).exec();
+//   } else if (storeId) {
+//     data = await productModel.find({ storeId }).exec();
+//   } else {
+//     data = await productModel.find();
+//   }
+
+//   res.json({ data });
+// } catch (error) {
+//   res.json({ error });
+// }

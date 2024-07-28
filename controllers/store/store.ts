@@ -67,7 +67,7 @@ export const updateStore = async (req: Request, res: Response) => {
 
 export const getAllStores = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const stores = await StoreModel.find();
+    const stores = await StoreModel.find().select("-password");
     res.json({ success: true, data: stores });
   }
 );
@@ -75,7 +75,7 @@ export const getAllStores = expressAsyncHandler(
 export const getUserStore = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const store = await StoreModel.findById(id);
+    const store = await StoreModel.findById(id).select("-password");
     if (store?.id != id)
       return res.json({ success: false, message: "Store does not exist" });
     res.status(200).json({ success: true, data: store });
