@@ -20,7 +20,6 @@ export const createProducts = async (req: Request, res: Response) => {
     res.json({ data });
   } catch (error) {
     res.json({ error });
-    console.log(error);
   }
 };
 
@@ -122,7 +121,7 @@ export const getProduct = async (req: Request, res: Response) => {
   try {
     const data: any = await productModel.findOne({ _id: id });
     if (data._id != id) return res.json({ error: "product not found" });
-    console.log(data);
+
     res.json({ data });
   } catch (error) {
     res.json({ error });

@@ -7,15 +7,17 @@ import mongoose, { AnyArray } from "mongoose";
 export const AddToCart = async (req: Request, res: Response) => {
   try {
     const { productId, userId, quantity } = req.body;
-    console.log(req.body);
+
     const cartOnDb = await cartModel.findOne({ productId });
-    console.log(cartOnDb);
+
     if (cartOnDb)
       return res.status(400).json({ error: "Product already exist in cart" });
+
     const productt: any = await productModel.findById(productId);
     const amount = quantity * parseFloat(productt.price);
-    console.log(productt, "amounttt");
+
     if (!userId) return res.status(401).json({ error: "unauthorised" });
+
     const cart: any = new cartModel({
       productId,
       amount,
@@ -23,6 +25,7 @@ export const AddToCart = async (req: Request, res: Response) => {
       userId,
     });
     const data = await cart.save();
+
     res.json({ data: { productt, data } });
   } catch (error) {
     const errors = handleErrors(error);

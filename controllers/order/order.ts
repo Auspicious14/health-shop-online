@@ -9,14 +9,15 @@ dotenv.config();
 
 export const PlaceOrder = async (req: Request, res: Response) => {
   console.log(req.body);
-  const { id, amount, address } = req.body;
+  const { userId, amount, address } = req.body;
   try {
-    const cart = await cartModel.find({ userId: id });
-    if (cart) {
-      const order: any = new orderModel({ amount, address, cart, userId: id });
-      const data = await order.save();
-      res.json({ data });
-    }
+    const cart = await cartModel.find({ userId });
+    if (!cart) res.json({ message: "Cart not found" });
+
+    const order: any = new orderModel({ amount, address, cart, userId });
+    const data = await order.save();
+
+    res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -54,6 +55,9 @@ export const deleteOrder = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Unathoriszed" });
 
     const data: any = await orderModel.findOneAndDelete({ _id: id, storeId });
+    if (!data) {
+      res.json({ message: "Order not found" });
+    }
     res.json({ message: "order successfully deleted" });
   } catch (error) {
     const errors = handleErrors(error);

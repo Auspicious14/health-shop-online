@@ -9,7 +9,7 @@ const productSchema = new Schema(
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "store",
-      required: true,
+      // required: true,
     },
     images: [
       { uri: { type: String }, name: { type: String }, type: { type: String } },
