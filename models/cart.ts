@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 const Schema = mongoose.Schema;
 
 const cartSchema = new Schema(
@@ -8,11 +8,6 @@ const cartSchema = new Schema(
       ref: "user",
       required: true,
     },
-    // product: {
-    //   // product: { type: {} },
-    //   quantity: { type: Number, default: 1 },
-    //   amount: { type: Number },
-    // },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "product",
@@ -24,5 +19,12 @@ const cartSchema = new Schema(
   { timestamps: true }
 );
 
-const cartModel = mongoose.model("cart", cartSchema);
+const cartModel = mongoose.model<ICart>("cart", cartSchema);
 export default cartModel;
+
+export interface ICart extends Document {
+  userId?: string;
+  amount?: number;
+  productId: string;
+  quantity: number;
+}

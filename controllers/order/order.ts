@@ -1,14 +1,19 @@
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
-import orderModel from "../../models/order";
+import orderModel, { IOrder } from "../../models/order";
 import cartModel from "../../models/cart";
 import StoreModel, { IStore } from "../../models/store";
 const https = require("https");
 import dotenv from "dotenv";
+import userAuthModel from "../../models/userAuth";
+import productModel from "../../models/products";
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import { apiReq } from "../../middlewares/axios";
+
 dotenv.config();
 
 export const PlaceOrder = async (req: Request, res: Response) => {
-  console.log(req.body);
   const { userId, amount, address } = req.body;
   try {
     const cart = await cartModel.find({ userId });
@@ -132,41 +137,121 @@ export const orderStats = async (req: Request, res: Response) => {
   }
 };
 
-export const payment = async (request: Request, response: Response) => {
+export const payment = async (req: Request, res: Response) => {
+  const { api } = await apiReq();
+  const { userId, amount, order } = req.body;
+
+  if (!userId) res.json({ message: "Unauthorised" });
+
+  const user = await userAuthModel.findById(userId);
+  if (!user) res.json({ message: "No user found" });
+
   const params = JSON.stringify({
-    email: request.body.email,
-    amount: request.body.amount * 100,
+    email: user?.email,
+    amount: amount * 100,
   });
-  const options = {
-    hostname: "api.paystack.co",
-    port: 443,
-    path: "/transaction/initialize",
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
-      "Content-Type": "application/json",
-    },
+
+  const response = await api.post("/transaction/initialize", params);
+
+  if (!response.data) throw new Error(response?.data?.error);
+  res.json({ data: response.data });
+  automateTransfer(order);
+};
+
+const automateTransfer = async (order: IOrder) => {
+  let reference = uuidv4();
+  const carts = order.cart.map((c) => c);
+  const productIds = order.cart.map((c) => c.productId);
+
+  const products = await Promise.all(
+    productIds.map(async (id) => await productModel.findById(id))
+  );
+
+  const storeIds = products.map((p) => p?.storeId);
+  const stores = await Promise.all(
+    storeIds.map(async (id) => await StoreModel.findById(id))
+  );
+
+  const storeEmail = stores.map((s) => s?.email);
+
+  const productsAmount = carts.map((c) => c.amount?.toString());
+
+  let payload = storeIds.map((id, index) => ({
+    id: id?.toString(),
+    amount: productsAmount[index],
+    reference,
+    reason: "Payment Transfer",
+  }));
+
+  const params = {
+    source: "balance",
+    currency: "NGN",
+    transfer: payload,
   };
 
-  const paystackRequest = https
-    .request(options, (res: any) => {
-      let data = "";
+  await Promise.all(stores.map(async (s) => await createTransferRecipient(s)));
 
-      res.on("data", (chunk: any) => {
-        data += chunk;
-      });
+  // const {api} = await apiReq()
+  // const response = await api.post("/transfer/bulk", JSON.stringify(params))
+};
 
-      res.on("end", () => {
-        response.json(JSON.parse(data));
-        // console.log(JSON.parse(data));
-      });
-    })
-    .on("error", (error: any) => {
-      console.error(error);
-      const err = handleErrors(error);
-      response.json(err);
-    });
+// const paystackPayment = async (params: any) => {
+//   // const options = {
+//   //   hostname: "api.paystack.co",
+//   //   port: 443,
+//   //   path: "/transaction/initialize",
+//   //   method: "POST",
+//   //   headers: {
+//   //     Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+//   //     "Content-Type": "application/json",
+//   //   },
+//   // };
 
-  paystackRequest.write(params);
-  paystackRequest.end();
+//   // const paystackRequest = https
+//   //   .request(options, (res: any) => {
+//   //     let data = "";
+
+//   //     res.on("data", (chunk: any) => {
+//   //       data += chunk;
+//   //     });
+
+//   //     res.on("end", () => {
+//   //       res.json(JSON.parse(data));
+//   //       // console.log(JSON.parse(data));
+//   //       return data;
+//   //     });
+//   //   })
+//   //   .on("error", (error: any) => {
+//   //     console.error(error);
+//   //     const err = handleErrors(error);
+//   //     return err;
+//   //   });
+
+//   // paystackRequest.write(params);
+//   // paystackRequest.end();
+// };
+
+const createTransferRecipient = async (payload: IStore | null) => {
+  const { api } = await apiReq();
+
+  const store = await StoreModel.findById(payload?.id);
+  if (!store) throw new Error("No Store found");
+
+  const params = JSON.stringify({
+    type: "nuban",
+    currency: "NGN",
+    name: store.bankAccountName,
+    account_number: store.bankAccountNumber,
+    bank_code: store.cvv,
+  });
+
+  const response = await api.post("/transferrecipient", params);
+
+  if (!response.data) throw new Error("Error creating transfer recipient");
+  console.log(response.data, "transfer recipient created");
+  // const store = await StoreModel.findByIdAndUpdate(
+  //   { _id: storeId },
+  //   { $set: {recipientCode: response.data.recipient_code} },
+  //   { new: true }
+  // );
 };

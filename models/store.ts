@@ -48,6 +48,7 @@ export const StoreSchema = new Schema(
     bankName: { type: String },
     bankAccountNumber: { type: String },
     bankAccountName: { type: String },
+    cvv: { type: String },
     password: { type: String, required: true, minLength: 6 },
   },
   { timestamps: true }
@@ -71,6 +72,7 @@ export interface IStore extends Document {
   bankName: string;
   bankAccountName: string;
   bankAccountNumber: string;
+  cvv: string;
   storeType: string;
   businessNumber: string;
   storeAddress: string;
