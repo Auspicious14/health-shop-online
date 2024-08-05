@@ -173,29 +173,34 @@ const automateTransfer = async (order: IOrder) => {
   );
 
   const storeEmail = stores.map((s) => s?.email);
-
   const productsAmount = carts.map((c) => c.amount?.toString());
 
-  let payload = storeIds.map((id, index) => ({
-    id: id?.toString(),
+  let payload = stores.map((s, index) => ({
+    recipient: s?.recipientCode,
     amount: productsAmount[index],
     reference,
-    reason: "Payment Transfer",
+    reason: "Payment Transfer for goods bought",
   }));
 
   const params = {
     source: "balance",
     currency: "NGN",
-    transfer: payload,
+    transfers: payload,
   };
 
-  await Promise.all(stores.map(async (s) => await createTransferRecipient(s)));
+  stores.map(async (s) => {
+    if (!s?.recipientCode) {
+      await Promise.all(
+        stores.map(async (s) => await createTransferRecipient(s))
+      );
+    }
+  });
 
-  // const {api} = await apiReq()
-  // const response = await api.post("/transfer/bulk", JSON.stringify(params))
+  const { api } = await apiReq();
+  const response = await api.post("/transfer/bulk", JSON.stringify(params));
+  console.log(response.data);
 };
 
-// const paystackPayment = async (params: any) => {
 //   // const options = {
 //   //   hostname: "api.paystack.co",
 //   //   port: 443,
@@ -240,18 +245,18 @@ const createTransferRecipient = async (payload: IStore | null) => {
   const params = JSON.stringify({
     type: "nuban",
     currency: "NGN",
-    name: store.bankAccountName,
-    account_number: store.bankAccountNumber,
-    bank_code: store.cvv,
+    name: store?.bankAccountName,
+    account_number: store?.bankAccountNumber,
+    bank_code: store?.bankCode,
   });
 
   const response = await api.post("/transferrecipient", params);
 
   if (!response.data) throw new Error("Error creating transfer recipient");
-  console.log(response.data, "transfer recipient created");
-  // const store = await StoreModel.findByIdAndUpdate(
-  //   { _id: storeId },
-  //   { $set: {recipientCode: response.data.recipient_code} },
-  //   { new: true }
-  // );
+
+  const updateStore = await StoreModel.findByIdAndUpdate(
+    { _id: store?.id },
+    { $set: { recipientCode: response.data.recipient_code } },
+    { new: true }
+  );
 };
