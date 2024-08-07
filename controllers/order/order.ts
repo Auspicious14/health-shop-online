@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import orderModel, { IOrder } from "../../models/order";
-import cartModel from "../../models/cart";
+import cartModel, { ICart } from "../../models/cart";
 import StoreModel, { IStore } from "../../models/store";
 const https = require("https");
 import dotenv from "dotenv";
@@ -73,8 +73,29 @@ export const deleteOrder = async (req: Request, res: Response) => {
 export const getUserOrder = async (req: Request, res: Response) => {
   const id = req.params.userId;
   try {
-    const data: any = await orderModel.find({ userId: id });
-    res.json({ data });
+    let updatedOrders;
+    const orders = await orderModel.find({ userId: id }).lean();
+    if (orders) {
+      const orderPromises = orders.map(async (order: IOrder) => {
+        const cartPromises = order.cart.map(async (c: ICart) => {
+          const product = await productModel.findById(c.productId).lean();
+
+          return {
+            ...c,
+            product,
+          };
+        });
+
+        const updatedCart = await Promise.all(cartPromises);
+        return {
+          ...order,
+          cart: updatedCart,
+        };
+      });
+
+      updatedOrders = await Promise.all(orderPromises);
+    }
+    res.json({ data: updatedOrders });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -201,41 +222,6 @@ const automateTransfer = async (order: IOrder) => {
   console.log(response.data);
 };
 
-//   // const options = {
-//   //   hostname: "api.paystack.co",
-//   //   port: 443,
-//   //   path: "/transaction/initialize",
-//   //   method: "POST",
-//   //   headers: {
-//   //     Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
-//   //     "Content-Type": "application/json",
-//   //   },
-//   // };
-
-//   // const paystackRequest = https
-//   //   .request(options, (res: any) => {
-//   //     let data = "";
-
-//   //     res.on("data", (chunk: any) => {
-//   //       data += chunk;
-//   //     });
-
-//   //     res.on("end", () => {
-//   //       res.json(JSON.parse(data));
-//   //       // console.log(JSON.parse(data));
-//   //       return data;
-//   //     });
-//   //   })
-//   //   .on("error", (error: any) => {
-//   //     console.error(error);
-//   //     const err = handleErrors(error);
-//   //     return err;
-//   //   });
-
-//   // paystackRequest.write(params);
-//   // paystackRequest.end();
-// };
-
 const createTransferRecipient = async (payload: IStore | null) => {
   const { api } = await apiReq();
 
@@ -260,3 +246,5 @@ const createTransferRecipient = async (payload: IStore | null) => {
     { new: true }
   );
 };
+
+const refund = () => {};
