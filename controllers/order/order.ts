@@ -71,7 +71,7 @@ export const deleteOrder = async (req: Request, res: Response) => {
 };
 
 export const getUserOrder = async (req: Request, res: Response) => {
-  const id = req.params.userId;
+  const id = req.query.userId;
   try {
     let updatedOrders;
     const orders = await orderModel.find({ userId: id }).lean();
@@ -101,17 +101,46 @@ export const getUserOrder = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
-export const getOneOrder = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { storeId } = req.query;
-  try {
-    const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathoriszed" });
 
-    const data: any = await orderModel.findOne({ _id: id, storeId });
-    if (data?._id != id) return res.json({ error: "order not found" });
-    res.json({ data });
+export const getOneOrder = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { storeId } = req.query;
+
+  try {
+    if (storeId) {
+      const store: IStore | null = await StoreModel.findById(storeId);
+      if (store?._id != storeId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Unathoriszed" });
+    }
+    let query: any = {};
+    let updatedCart: any;
+    if (storeId) query.storeId = storeId;
+    if (id) query._id = id;
+
+    const order = await orderModel.findOne(query).lean();
+    if (order?._id != id) return res.json({ error: "order not found" });
+
+    const cartPromises = order.cart.map(async (c: ICart) => {
+      const product = await productModel.findById(c.productId).lean();
+      const store = await StoreModel.findById(product?.storeId)
+        .select("-password")
+        .lean();
+      return {
+        ...c,
+        product,
+        store,
+      };
+    });
+
+    updatedCart = await Promise.all(cartPromises);
+    res.json({
+      data: {
+        ...order,
+        cart: updatedCart,
+      },
+    });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -119,19 +148,43 @@ export const getOneOrder = async (req: Request, res: Response) => {
 };
 
 export const getAllUserOrder = async (req: Request, res: Response) => {
-  const { storeId } = req.query;
+  const { storeId, userId } = req.query;
   try {
-    const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathoriszed" });
-
-    let data: any;
     if (storeId) {
-      data = await orderModel.find({ storeId });
-    } else {
-      data = await orderModel.find();
+      const store: IStore | null = await StoreModel.findById(storeId);
+      if (store?._id != storeId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Unathoriszed" });
     }
-    res.json({ data });
+
+    let query: any = {};
+    if (storeId) query.storeId = storeId;
+    if (userId) query.userId = userId;
+
+    let updatedOrders;
+    const orders = await orderModel.find(query).lean();
+    if (orders) {
+      const orderPromises = orders.map(async (order: IOrder) => {
+        const cartPromises = order.cart.map(async (c: ICart) => {
+          const product = await productModel.findById(c.productId).lean();
+
+          return {
+            ...c,
+            product,
+          };
+        });
+
+        const updatedCart = await Promise.all(cartPromises);
+        return {
+          ...order,
+          cart: updatedCart,
+        };
+      });
+
+      updatedOrders = await Promise.all(orderPromises);
+    }
+    res.json({ data: updatedOrders });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -176,7 +229,7 @@ export const payment = async (req: Request, res: Response) => {
 
   if (!response.data) throw new Error(response?.data?.error);
   res.json({ data: response.data });
-  automateTransfer(order);
+  // automateTransfer(order);
 };
 
 const automateTransfer = async (order: IOrder) => {

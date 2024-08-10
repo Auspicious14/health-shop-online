@@ -13,8 +13,14 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token: any = req.cookies.token;
-  if (!token) return res.json({ error: "Not authorized" });
+  let token: string;
+  if (req.cookies.token) {
+    token = req.cookies.token;
+  } else {
+    token = req.header("Authorization")?.replace("Bearer ", "");
+  }
+
+  if (!token) return res.status(401).json({ error: "User not authenticated" });
   const verifyToken = jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
     if (err) return res.json({ error: "invalid token" });
     req.user = user;
