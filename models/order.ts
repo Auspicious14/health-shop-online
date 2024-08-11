@@ -13,7 +13,8 @@ const orderSchema = new Schema(
     cart: { type: Object, ref: "cart" },
     amount: { type: Number, required: String },
     address: { type: Object, required: true },
-    status: { type: String, default: "new" },
+    status: { type: String, default: "pending" },
+    deliveryDate: { type: Date },
   },
   { timestamps: true }
 );

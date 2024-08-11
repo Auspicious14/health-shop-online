@@ -18,8 +18,10 @@ export const PlaceOrder = async (req: Request, res: Response) => {
   try {
     const cart = await cartModel.find({ userId });
     if (!cart) res.json({ message: "Cart not found" });
-
     const order: any = new orderModel({ amount, address, cart, userId });
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 2);
+    order.deliveryDate = deliveryDate;
     const data = await order.save();
 
     res.json({ data });
@@ -32,13 +34,18 @@ export const PlaceOrder = async (req: Request, res: Response) => {
 export const updateOrder = async (req: Request, res: Response) => {
   const id = req.params.id;
   const { storeId } = req.query;
+
   try {
-    const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathoriszed" });
+    if (storeId) {
+      const store: IStore | null = await StoreModel.findById(storeId);
+      if (store?._id != storeId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Unathoriszed" });
+    }
 
     const data: any = await orderModel.findOneAndUpdate(
-      { _id: id, storeId },
+      { _id: id },
       { $set: req.body },
       {
         new: true,
@@ -300,4 +307,25 @@ const createTransferRecipient = async (payload: IStore | null) => {
   );
 };
 
-const refund = () => {};
+export const refund = async (req: Request, res: Response) => {
+  const order = req.body;
+
+  try {
+    const oneOrder = await orderModel.findById(order._id);
+    if (!oneOrder) res.json({ message: "No order found" });
+
+    const currentDate = new Date();
+    const orderDate = new Date(oneOrder?.createdAt as string);
+    const threeDaysAhead = new Date(currentDate);
+    threeDaysAhead.setDate(currentDate.getDate() + 3);
+
+    if (orderDate < threeDaysAhead) {
+      console.log("The order date is within the past 3 days.");
+    } else {
+      console.log("The order date is more than 3 days ago.");
+    }
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
