@@ -7,6 +7,7 @@ const io = new Server();
 
 export const sendMessage = async (req: Request, res: Response) => {
   const { storeId, userId, message } = req.body;
+
   try {
     io.emit("send_message", { storeId, userId, message });
     const newMessage = new chatModel({
