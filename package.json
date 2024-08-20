@@ -33,6 +33,7 @@
     "nodemailer": "^6.9.1",
     "nodemon": "^2.0.21",
     "paystack-api": "^2.0.6",
+    "socket.io": "^4.7.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2",
     "uuid": "^10.0.0",
@@ -44,5 +45,9 @@
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.11.7",
     "webpack-cli": "^5.1.4"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8",
+    "utf-8-validate": "^6.0.4"
   }
 }
