@@ -2,25 +2,41 @@ import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import { Server, Socket } from "socket.io";
 import chatModel from "../../models/chat";
+import StoreModel from "../../models/store";
+import { sendEmail } from "../../middlewares/email";
 
 const io = new Server();
 
 export const sendMessage = async (req: Request, res: Response) => {
-  const { storeId, userId, message } = req.body;
+  const { storeId, userId, message, senderId } = req.body;
 
   try {
-    io.emit("send_message", { storeId, userId, message });
+    const store = await StoreModel.findById(storeId).select("-password");
+    if (store?._id != storeId) return res.json({ message: "Unauthorised" });
+
+    let align: string;
+    align = senderId == userId ? "right" : "left";
+    align = senderId == storeId ? "right" : "left";
+
+    io.emit("send_message", { storeId, userId, message, senderId, align });
     const newMessage = new chatModel({
       storeId,
       userId,
       message,
+      senderId,
+      align,
     });
     await newMessage.save();
+
+    const text = "You have unread message";
+    await sendEmail(store?.email, "Incoming Message", text);
 
     io.emit("new_message", {
       storeId,
       userId,
       message,
+      senderId,
+      align,
       createdAt: newMessage.createdAt,
       updatedAt: newMessage.updatedAt,
     });
@@ -46,7 +62,6 @@ export const getMessages = async (req: Request, res: Response) => {
     if (userId) query.userId = userId;
 
     const messages = await chatModel.find();
-    console.log(messages, "messages");
     res.json(messages);
   } catch (error) {
     const errors = handleErrors(error);
