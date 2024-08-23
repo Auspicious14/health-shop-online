@@ -7,7 +7,6 @@ dotenv.config();
 
 export const sendEmail = async (email: any, subject: any, text: any) => {
   try {
-    // create reusable transporter object using the default SMTP transport
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       secure: true,
@@ -16,12 +15,10 @@ export const sendEmail = async (email: any, subject: any, text: any) => {
       // port: 456,
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD, // naturally, replace both with your real credentials or an application-specific password
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
-    // const source = fs.readFileSync(path.join(__dirname, template), "utf8");
-    // const compiledTemplate = handlebars.compile(source);
     const options = () => {
       return {
         from: `Auspicious: <${process.env.EMAIL_USERNAME}>`,
