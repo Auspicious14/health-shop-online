@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon server.ts",
-    "build": "webpack"
+    "build": "tsc && webpack"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
@@ -36,7 +36,6 @@
     "paystack-api": "^2.0.6",
     "socket.io": "^4.7.5",
     "ts-node": "^10.9.1",
-    "tsc": "^2.0.4",
     "typescript": "^5.0.2",
     "uuid": "^10.0.0",
     "validator": "^13.9.0",
@@ -46,6 +45,7 @@
     "@types/node": "^20.10.5",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.11.7",
+    "ts-loader": "^9.5.1",
     "webpack-cli": "^5.1.4"
   },
   "optionalDependencies": {
