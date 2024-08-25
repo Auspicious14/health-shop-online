@@ -14,7 +14,7 @@ const cookieParser = require("cookie-parser");
 import cors from "cors";
 import express, { Request, Response, NextFunction } from "express";
 import { Server, Socket } from "socket.io";
-import chatModel from "./models/chat";
+import chatModel, { IConnectedClients } from "./models/chat";
 import StoreModel from "./models/store";
 import { sendEmail } from "./middlewares/email";
 
@@ -43,11 +43,20 @@ appRoute.use(categoryRoute);
 appRoute.use(StoreRoute);
 appRoute.use(ChatRoute);
 
+const connectedClients: IConnectedClients[] = [];
+
 export const SocketInit = (httpServer: any, options: any) => {
   const io = new Server(httpServer, options);
 
   io.on("connection", (socket: Socket) => {
     console.log("A user connected", socket.id);
+
+    socket.on(
+      "register_client",
+      ({ senderId, role }: { senderId: string; role: string }) => {
+        connectedClients.push({ senderId, role, socketId: socket.id });
+      }
+    );
 
     socket.on("chats", async ({ storeId, userId }) => {
       const messages = await chatModel
@@ -61,19 +70,25 @@ export const SocketInit = (httpServer: any, options: any) => {
       const store = await StoreModel.findById(storeId).select("-password");
       if (store?._id != storeId) throw new Error("Unauthorised");
 
-      let align: string;
-      if (senderId == userId || senderId == storeId) {
-        align = "right";
-      } else {
-        align = "left";
-      }
-      // align = senderId == userId ? "right" : "left";
-      // align = senderId == storeId ? "right" : "left";
+      let align = senderId == userId || senderId == storeId ? "right" : "left";
 
       const newMessage = new chatModel({ ...data, align });
       await newMessage.save();
 
-      const text = "<div>You have unread message</div>";
+      const receiverId = senderId == userId ? storeId : userId;
+      const receiverClient = connectedClients.find(
+        (client) => client.senderId == receiverId
+      );
+
+      if (receiverClient) {
+        socket.to(receiverClient.socketId).emit("new_message", {
+          ...data,
+          align,
+          createdAt: newMessage.createdAt,
+          updatedAt: newMessage.updatedAt,
+        });
+      }
+      const text = "<div>You have an unread message</div>";
       const mail = await sendEmail(
         store?.email,
         "Incoming Message",
@@ -81,16 +96,20 @@ export const SocketInit = (httpServer: any, options: any) => {
       );
       console.log(mail, "mailll");
 
-      io.emit("new_message", {
-        ...data,
-        align,
-        createdAt: newMessage.createdAt,
-        udpdatedAt: newMessage.updatedAt,
-      });
+      // io.emit("new_message", {
+      //   ...data,
+      //   align,
+      //   createdAt: newMessage.createdAt,
+      //   udpdatedAt: newMessage.updatedAt,
+      // });
     });
 
     socket.on("disconnect", () => {
       console.log("A user disconnected", socket.id);
+      const index = connectedClients.findIndex(
+        (client) => client.socketId === socket.id
+      );
+      if (index !== -1) connectedClients.splice(index, 1);
     });
   });
 };

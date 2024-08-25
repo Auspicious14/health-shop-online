@@ -25,3 +25,9 @@ export interface IChat {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IConnectedClients {
+  senderId: string;
+  role: string;
+  socketId: string;
+}
