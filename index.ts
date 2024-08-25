@@ -49,8 +49,10 @@ export const SocketInit = (httpServer: any, options: any) => {
   io.on("connection", (socket: Socket) => {
     console.log("A user connected", socket.id);
 
-    socket.on("chats", async () => {
-      const messages = await chatModel.find().sort({ createdAt: 1 });
+    socket.on("chats", async ({ storeId, userId }) => {
+      const messages = await chatModel
+        .find({ storeId, userId })
+        .sort({ createdAt: 1 });
       socket.emit("all_messages", messages);
     });
 
