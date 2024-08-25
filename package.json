@@ -1,5 +1,5 @@
 {
-  "name": "healthshop-be",
+  "name": "vendify-be",
   "version": "1.0.0",
   "description": "E-commerce application",
   "main": "index.ts",
@@ -8,7 +8,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "nodemon server.ts"
+    "start": "nodemon server.ts",
+    "build": "webpack"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
@@ -35,6 +36,7 @@
     "paystack-api": "^2.0.6",
     "socket.io": "^4.7.5",
     "ts-node": "^10.9.1",
+    "tsc": "^2.0.4",
     "typescript": "^5.0.2",
     "uuid": "^10.0.0",
     "validator": "^13.9.0",
