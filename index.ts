@@ -58,51 +58,9 @@ export const SocketInit = (httpServer: any, options: any) => {
       }
     );
 
-    socket.on("chats", async ({ storeId, userId }) => {
-      const messages = await chatModel
-        .find({ storeId, userId })
-        .sort({ createdAt: 1 });
-      socket.emit("all_messages", messages);
-    });
+    chat(socket);
 
-    socket.on("send_message", async (data) => {
-      const { storeId, senderId, userId, message } = data;
-      const store = await StoreModel.findById(storeId).select("-password");
-      if (store?._id != storeId) throw new Error("Unauthorised");
-
-      let align = senderId == userId || senderId == storeId ? "right" : "left";
-
-      const newMessage = new chatModel({ ...data, align });
-      await newMessage.save();
-
-      const receiverId = senderId == userId ? storeId : userId;
-      const receiverClient = connectedClients.find(
-        (client) => client.senderId == receiverId
-      );
-
-      if (receiverClient) {
-        socket.to(receiverClient.socketId).emit("new_message", {
-          ...data,
-          align,
-          createdAt: newMessage.createdAt,
-          updatedAt: newMessage.updatedAt,
-        });
-      }
-      const text = "<div>You have an unread message</div>";
-      const mail = await sendEmail(
-        store?.email,
-        "Incoming Message",
-        JSON.stringify(text)
-      );
-      console.log(mail, "mailll");
-
-      // io.emit("new_message", {
-      //   ...data,
-      //   align,
-      //   createdAt: newMessage.createdAt,
-      //   udpdatedAt: newMessage.updatedAt,
-      // });
-    });
+    sendMessage(socket);
 
     socket.on("disconnect", () => {
       console.log("A user disconnected", socket.id);
@@ -111,5 +69,54 @@ export const SocketInit = (httpServer: any, options: any) => {
       );
       if (index !== -1) connectedClients.splice(index, 1);
     });
+  });
+};
+
+const sendMessage = (socket: Socket) => {
+  socket.on("send_message", async (data) => {
+    const { storeId, senderId, userId, message } = data;
+    const store = await StoreModel.findById(storeId).select("-password");
+    if (store?._id != storeId) throw new Error("Unauthorised");
+
+    let align = senderId == userId || senderId == storeId ? "right" : "left";
+
+    const newMessage = new chatModel({ ...data, align });
+    await newMessage.save();
+
+    // await conversationModel.findOneAndUpdate(
+    //   { userId, storeId },
+    //   { lastMessage: message, lastMessageAt: new Date() },
+    //   { new: true, upsert: true }
+    // );
+
+    const receiverId = senderId == userId ? storeId : userId;
+    const receiverClient = connectedClients.find(
+      (client) => client.senderId == receiverId
+    );
+
+    if (receiverClient) {
+      socket.to(receiverClient.socketId).emit("new_message", {
+        ...data,
+        align,
+        createdAt: newMessage.createdAt,
+        updatedAt: newMessage.updatedAt,
+      });
+    }
+    const text = "<div>You have an unread message</div>";
+    const mail = await sendEmail(
+      store?.email,
+      "Incoming Message",
+      JSON.stringify(text)
+    );
+  });
+};
+
+const chat = (socket: Socket) => {
+  socket.on("chats", async ({ storeId, userId }) => {
+    const messages = await chatModel
+      .find({ storeId, userId })
+      .sort({ createdAt: 1 });
+
+    socket.emit("all_messages", messages);
   });
 };

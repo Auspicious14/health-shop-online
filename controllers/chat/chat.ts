@@ -52,7 +52,7 @@ export const sendMessage = async (req: Request, res: Response) => {
   }
 };
 
-export const getMessages = async (req: Request, res: Response) => {
+export const getMessagesByStore = async (req: Request, res: Response) => {
   const { storeId, userId } = req.query;
 
   try {
@@ -68,3 +68,72 @@ export const getMessages = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
+  try {
+    const { storeId } = req.query;
+
+    const messagesByUser = await chatModel.aggregate([
+      { $match: { storeId } },
+      { $group: { _id: "$userId", messages: { $push: "$$ROOT" } } },
+
+      {
+        $addFields: {
+          userId: { $toObjectId: "$_id" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          "user.firstName": 1,
+          "user.lastName": 1,
+          messages: 1,
+        },
+      },
+    ]);
+
+    console.log(messagesByUser, "conversations");
+    return res.json({ data: messagesByUser });
+  } catch (error) {
+    const errors = handleErrors(error);
+    return res.json({ errors });
+  }
+};
+
+export const getMessagesBetweenUserAndStore = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { userId, storeId } = req.params;
+
+    const messages = await chatModel.find({ userId, storeId }).sort({
+      createdAt: 1,
+    });
+
+    return res.json({ success: true, data: messages });
+  } catch (error) {
+    const errors = handleErrors(error);
+    return res.json({ errors });
+  }
+};
+
+// const users = await chatModel
+// .find({ storeId })
+// .distinct('userId')
+// const conversations = await chatModel
+// .find({ storeId, userId: { $in: users } })
+// .sort({ createdAt: -1 })
+// .populate('userId', 'firstName lastName')
+// .group({
+//   _id: "$userId",
+//   lastMessage: { $first: "$$ROOT" }
+// });
