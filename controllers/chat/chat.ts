@@ -100,7 +100,6 @@ export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
       },
     ]);
 
-    console.log(messagesByUser, "conversations");
     return res.json({ data: messagesByUser });
   } catch (error) {
     const errors = handleErrors(error);
