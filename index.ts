@@ -14,7 +14,7 @@ const cookieParser = require("cookie-parser");
 import cors from "cors";
 import express, { Request, Response, NextFunction } from "express";
 import { Server, Socket } from "socket.io";
-import chatModel, { IConnectedClients } from "./models/chat";
+import chatModel, { conversationModel, IConnectedClients } from "./models/chat";
 import StoreModel from "./models/store";
 import { sendEmail } from "./middlewares/email";
 
@@ -44,6 +44,7 @@ appRoute.use(StoreRoute);
 appRoute.use(ChatRoute);
 
 const connectedClients: IConnectedClients[] = [];
+const onlineUsers = new Map();
 
 export const SocketInit = (httpServer: any, options: any) => {
   const io = new Server(httpServer, options);
@@ -51,16 +52,13 @@ export const SocketInit = (httpServer: any, options: any) => {
   io.on("connection", (socket: Socket) => {
     console.log("A user connected", socket.id);
 
-    socket.on(
-      "register_client",
-      ({ senderId, role }: { senderId: string; role: string }) => {
-        connectedClients.push({ senderId, role, socketId: socket.id });
-      }
-    );
+    socket.on("register_client", (client: IConnectedClients) => {
+      connectedClients.push(client);
+    });
 
     chat(socket);
-
     sendMessage(socket);
+    markAsRead(socket);
 
     socket.on("disconnect", () => {
       console.log("A user disconnected", socket.id);
@@ -80,14 +78,8 @@ const sendMessage = (socket: Socket) => {
 
     let align = senderId == userId || senderId == storeId ? "right" : "left";
 
-    const newMessage = new chatModel({ ...data, align });
+    const newMessage = new chatModel({ ...data, align, read: false });
     await newMessage.save();
-
-    // await conversationModel.findOneAndUpdate(
-    //   { userId, storeId },
-    //   { lastMessage: message, lastMessageAt: new Date() },
-    //   { new: true, upsert: true }
-    // );
 
     const receiverId = senderId == userId ? storeId : userId;
     const receiverClient = connectedClients.find(
@@ -100,8 +92,10 @@ const sendMessage = (socket: Socket) => {
         align,
         createdAt: newMessage.createdAt,
         updatedAt: newMessage.updatedAt,
+        read: false,
       });
     }
+
     const text = "<div>You have an unread message</div>";
     const mail = await sendEmail(
       store?.email,
@@ -117,6 +111,21 @@ const chat = (socket: Socket) => {
       .find({ storeId, userId })
       .sort({ createdAt: 1 });
 
-    socket.emit("all_messages", messages);
+    socket.emit("user_store_messages", messages);
   });
 };
+
+const markAsRead = (socket: Socket) => {
+  socket.on("mark_as_read", async ({ storeId, userId }) => {
+    await chatModel.updateMany(
+      { storeId, userId, read: false },
+      { $set: { read: true } }
+    );
+  });
+};
+
+// await conversationModel.findOneAndUpdate(
+//   { userId, storeId },
+//   { lastMessage: message, lastMessageAt: new Date() },
+//   { new: true, upsert: true }
+// );

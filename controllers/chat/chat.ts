@@ -75,8 +75,13 @@ export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
 
     const messagesByUser = await chatModel.aggregate([
       { $match: { storeId } },
-      { $group: { _id: "$userId", messages: { $push: "$$ROOT" } } },
-
+      {
+        $group: {
+          _id: "$userId",
+          messages: { $push: "$$ROOT" },
+          lastMessage: { $last: "$$ROOT" },
+        },
+      },
       {
         $addFields: {
           userId: { $toObjectId: "$_id" },
@@ -92,10 +97,46 @@ export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
       },
       { $unwind: "$user" },
       {
+        $addFields: {
+          unreadMessagesFromUser: {
+            $size: {
+              $filter: {
+                input: "$messages",
+                as: "message",
+                cond: {
+                  $and: [
+                    { $eq: ["$$message.read", false] },
+                    { $eq: ["$$message.senderId", "$userId"] },
+                  ],
+                },
+              },
+            },
+          },
+          unreadMessagesFromStore: {
+            $size: {
+              $filter: {
+                input: "$messages",
+                as: "message",
+                cond: {
+                  $and: [
+                    { $eq: ["$$message.read", false] },
+                    { $eq: ["$$message.senderId", storeId] },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+      {
         $project: {
           "user.firstName": 1,
           "user.lastName": 1,
           messages: 1,
+          "lastMessage.message": 1,
+          "lastMessage.createdAt": 1,
+          unreadMessagesFromUser: 1,
+          unreadMessagesFromStore: 1,
         },
       },
     ]);
@@ -125,6 +166,22 @@ export const getMessagesBetweenUserAndStore = async (
   }
 };
 
+export const getUnreadMessagesCount = async (req: Request, res: Response) => {
+  const { storeId, userId } = req.body;
+
+  try {
+    const data = await chatModel.countDocuments({
+      storeId,
+      userId,
+      read: false,
+    });
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    const errors = handleErrors(error);
+    return res.json({ errors });
+  }
+};
 // const users = await chatModel
 // .find({ storeId })
 // .distinct('userId')
