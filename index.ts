@@ -13,10 +13,6 @@ import ChatRoute from "./routes/chat";
 const cookieParser = require("cookie-parser");
 import cors from "cors";
 import express, { Request, Response, NextFunction } from "express";
-import { Server, Socket } from "socket.io";
-import chatModel, { conversationModel, IConnectedClients } from "./models/chat";
-import StoreModel from "./models/store";
-import { sendEmail } from "./middlewares/email";
 
 export const appRoute = express();
 
@@ -43,86 +39,71 @@ appRoute.use(categoryRoute);
 appRoute.use(StoreRoute);
 appRoute.use(ChatRoute);
 
-const connectedClients: IConnectedClients[] = [];
-const onlineUsers = new Map();
+// const sendMessage = (socket: Socket) => {
+//   socket.on("send_message", async (data) => {
+//     const { storeId, senderId, userId, message } = data;
+//     const store = await StoreModel.findById(storeId).select("-password");
+//     if (store?._id != storeId) throw new Error("Unauthorised");
 
-export const SocketInit = (httpServer: any, options: any) => {
-  const io = new Server(httpServer, options);
+//     let align = senderId == userId || senderId == storeId ? "right" : "left";
 
-  io.on("connection", (socket: Socket) => {
-    console.log("A user connected", socket.id);
+//     if (senderId === userId) {
+//       await chatModel.updateMany(
+//         { storeId, userId, senderId: storeId, read: false },
+//         { $set: { read: true } }
+//       );
+//     } else if (senderId === storeId) {
+//       await chatModel.updateMany(
+//         { storeId, userId, senderId: userId, read: false },
+//         { $set: { read: true } }
+//       );
+//     }
 
-    socket.on("register_client", (client: IConnectedClients) => {
-      connectedClients.push(client);
-    });
+//     const newMessage = new chatModel({ ...data, align, read: false });
+//     await newMessage.save();
 
-    chat(socket);
-    sendMessage(socket);
-    markAsRead(socket);
+//     const receiverId = senderId == userId ? storeId : userId;
+//     const receiverClient = connectedClients.find(
+//       (client) => client.senderId == receiverId
+//     );
 
-    socket.on("disconnect", () => {
-      console.log("A user disconnected", socket.id);
-      const index = connectedClients.findIndex(
-        (client) => client.socketId === socket.id
-      );
-      if (index !== -1) connectedClients.splice(index, 1);
-    });
-  });
-};
+//     if (receiverClient) {
+//       socket.to(receiverClient.socketId).emit("new_message", {
+//         ...data,
+//         align,
+//         createdAt: newMessage.createdAt,
+//         updatedAt: newMessage.updatedAt,
+//         read: false,
+//       });
+//     }
 
-const sendMessage = (socket: Socket) => {
-  socket.on("send_message", async (data) => {
-    const { storeId, senderId, userId, message } = data;
-    const store = await StoreModel.findById(storeId).select("-password");
-    if (store?._id != storeId) throw new Error("Unauthorised");
+//     const text = "<div>You have an unread message</div>";
+//     const mail = await sendEmail(
+//       store?.email,
+//       "Incoming Message",
+//       JSON.stringify(text)
+//     );
+//   });
+// };
 
-    let align = senderId == userId || senderId == storeId ? "right" : "left";
+// const chat = (socket: Socket) => {
+//   socket.on("chats", async ({ storeId, userId }) => {
+//     const messages = await chatModel
+//       .find({ storeId, userId })
+//       .sort({ createdAt: 1 });
 
-    const newMessage = new chatModel({ ...data, align, read: false });
-    await newMessage.save();
+//     socket.emit("user_store_messages", messages);
+//   });
+// };
 
-    const receiverId = senderId == userId ? storeId : userId;
-    const receiverClient = connectedClients.find(
-      (client) => client.senderId == receiverId
-    );
-
-    if (receiverClient) {
-      socket.to(receiverClient.socketId).emit("new_message", {
-        ...data,
-        align,
-        createdAt: newMessage.createdAt,
-        updatedAt: newMessage.updatedAt,
-        read: false,
-      });
-    }
-
-    const text = "<div>You have an unread message</div>";
-    const mail = await sendEmail(
-      store?.email,
-      "Incoming Message",
-      JSON.stringify(text)
-    );
-  });
-};
-
-const chat = (socket: Socket) => {
-  socket.on("chats", async ({ storeId, userId }) => {
-    const messages = await chatModel
-      .find({ storeId, userId })
-      .sort({ createdAt: 1 });
-
-    socket.emit("user_store_messages", messages);
-  });
-};
-
-const markAsRead = (socket: Socket) => {
-  socket.on("mark_as_read", async ({ storeId, userId }) => {
-    await chatModel.updateMany(
-      { storeId, userId, read: false },
-      { $set: { read: true } }
-    );
-  });
-};
+// const markAsRead = (socket: Socket) => {
+//   socket.on("mark_as_read", async ({ storeId, userId }) => {
+//     await chatModel.updateMany(
+//       { storeId, userId, read: false },
+//       { $set: { read: true } }
+//     );
+//   });
+// };
 
 // await conversationModel.findOneAndUpdate(
 //   { userId, storeId },

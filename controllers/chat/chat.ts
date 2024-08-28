@@ -120,7 +120,7 @@ export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
                 cond: {
                   $and: [
                     { $eq: ["$$message.read", false] },
-                    { $eq: ["$$message.senderId", storeId] },
+                    { $eq: ["$$message.senderId", "$storeId"] },
                   ],
                 },
               },

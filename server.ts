@@ -3,8 +3,9 @@ dotenv.config();
 import express from "express";
 const app = express();
 const mongoose = require("mongoose");
-import { appRoute, SocketInit } from "./index";
+import { appRoute } from "./index";
 import { createServer } from "http";
+import { SocketInit } from "./controllers/chat/socket";
 
 const port = process.env.PORT || 5000;
 const URI: any = process.env.MONGODB_URL;
