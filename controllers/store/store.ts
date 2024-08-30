@@ -68,13 +68,12 @@ export const updateStore = async (req: Request, res: Response) => {
 export const getAllStores = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { storeName } = req.query;
-    let stores: any;
-    console.log(storeName, "store name");
+    let stores: IStore[] = [];
+
     if (storeName) {
       stores = await StoreModel.find({
         storeName: { $regex: storeName, $options: "i" },
       }).select("-password");
-      console.log(stores, "store search store name");
     } else {
       stores = await StoreModel.find().select("-password");
     }
