@@ -93,7 +93,7 @@ export const getProducts = async (req: Request, res: Response) => {
     const query: any = {};
     if (storeId) query.storeId = storeId;
     if (category) query.categories = { $in: [category] };
-    if (name) query.name = name;
+    if (name) query.name = { $regex: name, $options: "i" };
     if (brand) query.brand = brand;
     if (color) query.color = color;
     if (maxPrice && minPrice) query.price = { $gte: minPrice, $lte: maxPrice };

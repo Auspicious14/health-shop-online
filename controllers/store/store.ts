@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as argon2 from "argon2";
-import StoreModel from "../../models/store";
+import StoreModel, { IStore } from "../../models/store";
 import { mapFiles } from "../../middlewares/file";
 import expressAsyncHandler from "express-async-handler";
 
@@ -67,7 +67,17 @@ export const updateStore = async (req: Request, res: Response) => {
 
 export const getAllStores = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const stores = await StoreModel.find().select("-password");
+    const { storeName } = req.query;
+    let stores: any;
+    console.log(storeName, "store name");
+    if (storeName) {
+      stores = await StoreModel.find({
+        storeName: { $regex: storeName, $options: "i" },
+      }).select("-password");
+      console.log(stores, "store search store name");
+    } else {
+      stores = await StoreModel.find().select("-password");
+    }
     res.json({ success: true, data: stores });
   }
 );
