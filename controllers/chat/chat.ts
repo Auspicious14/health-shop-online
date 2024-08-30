@@ -134,6 +134,7 @@ export const getUsersWhoMessagedStore = async (req: Request, res: Response) => {
           "user.lastName": 1,
           messages: 1,
           "lastMessage.message": 1,
+          "lastMessage.images": 1,
           "lastMessage.createdAt": 1,
           unreadMessagesFromUser: 1,
           unreadMessagesFromStore: 1,
