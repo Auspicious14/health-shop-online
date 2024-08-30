@@ -10,6 +10,9 @@ const chatSchema = new Schema(
     align: { type: String },
     userId: { type: String },
     read: { type: Boolean },
+    images: [
+      { uri: { type: String }, name: { type: String }, type: { type: String } },
+    ],
   },
   { timestamps: true }
 );

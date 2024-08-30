@@ -2,17 +2,23 @@ import { Socket } from "socket.io";
 import { sendEmail } from "../../../middlewares/email";
 import chatModel, { IConnectedClients } from "../../../models/chat";
 import StoreModel from "../../../models/store";
+import { mapFiles } from "../../../middlewares/file";
 
 export const sendMessage = (
   socket: Socket,
   connectedClients: IConnectedClients[]
 ) => {
   socket.on("send_message", async (data) => {
-    const { storeId, senderId, userId, message } = data;
+    const { storeId, senderId, userId, message, files } = data;
     const store = await StoreModel.findById(storeId).select("-password");
     if (store?._id != storeId) throw new Error("Unauthorised");
 
     let align = senderId == userId || senderId == storeId ? "right" : "left";
+    let images: Array<{}> = [{}];
+
+    if (files) {
+      images = await mapFiles(files);
+    }
 
     if (senderId === userId) {
       await chatModel.updateMany(
@@ -26,7 +32,7 @@ export const sendMessage = (
       );
     }
 
-    const newMessage = new chatModel({ ...data, align, read: false });
+    const newMessage = new chatModel({ ...data, align, read: false, images });
     await newMessage.save();
 
     const receiverId = senderId == userId ? storeId : userId;
@@ -41,6 +47,7 @@ export const sendMessage = (
         createdAt: newMessage.createdAt,
         updatedAt: newMessage.updatedAt,
         read: false,
+        images,
       });
     }
 
