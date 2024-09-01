@@ -8,8 +8,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "nodemon server.ts",
-    "build": "tsc && webpack"
+    "start": "node dist/server.js",
+    "dev": "nodemon server.ts",
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@types/cors": "^2.8.13",
