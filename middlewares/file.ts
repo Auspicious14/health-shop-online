@@ -7,8 +7,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET,
 });
 
+export interface IFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 export const mapFiles = async (files: any) => {
-  let fls: Array<{}> = [];
+  let fls: IFile[] = [];
 
   if (files && files?.length > 0) {
     for await (let file of files) {

@@ -3,39 +3,52 @@ dotenv.config();
 import { Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import blogModel from "../../models/blog";
-import { mapFiles } from "../../middlewares/file";
+import { mapFiles, IFile } from "../../middlewares/file";
+import StoreModel from "../../models/store";
 const cloudinary = require("cloudinary").v2;
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
 });
+
 export const createBlog = async (req: Request, res: Response) => {
-  const { title, description, images } = req.body;
+  const { title, description, images, storeId } = req.body;
 
   try {
-    const files = await mapFiles(images);
-    const blog: any = new blogModel({
+    const store = await StoreModel.findById(storeId).select("-password");
+    if (!store) return res.json({ success: false, message: "Unauthorised" });
+
+    const files: IFile[] = await mapFiles(images);
+    const blog = new blogModel({
       title,
       description,
       images: files,
+      author: store?._id,
     });
-    const data: any = await blog.save();
-    console.log(data);
+    const data = await blog.save();
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
     res.json({ errors });
-    console.log(error);
   }
 };
 
 export const updateblog = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const { images, storeId, ...vals } = req.body;
   try {
+    const store = await StoreModel.findById(storeId).select("-password");
+    if (!store) return res.json({ success: false, message: "Unauthorised" });
+
+    let files = await mapFiles(images);
+
+    if (!files)
+      return res.json({ error: "Error uploading image to cloudinary" });
     const data: any = await blogModel.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: { ...vals, images: files, storeId } },
       {
         new: true,
       }
@@ -62,22 +75,25 @@ export const deleteblog = async (req: Request, res: Response) => {
 };
 
 export const getblogs = async (req: Request, res: Response) => {
-  const category = req.query.category;
-  const name = req.query.name;
-  const newP = req.query.new;
-  console.log(req.query);
+  const { name, category, new: latestBlogs, storeId } = req.query;
+
   try {
     let data: any;
-    if (category) {
-      data = await blogModel.find({
-        categories: { $in: [category] },
-      });
-    } else if (newP) {
-      data = await blogModel.find().sort({ createdAt: -1 }).limit(10);
-    } else if (name) {
-      data = await blogModel.find({ name });
+    let query: any = {};
+
+    if (category) query.category = { $in: [category] };
+    if (name) query.name = name;
+    if (storeId) query.storeId = storeId;
+
+    if (latestBlogs) {
+      data = await blogModel
+        .find()
+        .populate("author")
+        .select("-password")
+        .sort({ createdAt: -1 })
+        .limit(10);
     } else {
-      data = await blogModel.find();
+      data = await blogModel.find(query).populate("author").select("-password");
     }
 
     res.json({ data });
@@ -90,9 +106,12 @@ export const getblogs = async (req: Request, res: Response) => {
 export const getOneblog = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const data: any = await blogModel.findById(id);
+    const data: any = await blogModel
+      .findById(id)
+      .populate("author")
+      .select("-password");
     if (data._id != id) return res.json({ error: "blog not found" });
-    console.log(data);
+
     res.json({ data });
   } catch (error) {
     const errors = handleErrors(error);
