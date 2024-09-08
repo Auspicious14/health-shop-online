@@ -3,6 +3,7 @@ import * as argon2 from "argon2";
 import StoreModel, { IStore } from "../../models/store";
 import { mapFiles } from "../../middlewares/file";
 import expressAsyncHandler from "express-async-handler";
+import productModel from "../../models/products";
 
 export const createStore = expressAsyncHandler(async (req: any, res: any) => {
   const { password, email, ...values } = req.body;
@@ -106,3 +107,54 @@ export const deleteStore = async (req: Request, res: Response) => {
     res.status(400).json({ success: false, error });
   }
 };
+
+export const newStores = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    let stores: IStore[] = [];
+
+    stores = await StoreModel.find()
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.json({ success: true, data: stores });
+  }
+);
+
+export const topStores = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    let stores: IStore[] = [];
+
+    stores = await StoreModel.find()
+      .select("-password")
+      .sort({ createdAt: 1 })
+      .limit(10);
+
+    res.json({ success: true, data: stores });
+  }
+);
+
+export const featuredStores = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    let stores: IStore[] = [];
+    let featuredStores = [];
+    stores = await StoreModel.find().select("-password");
+
+    const mapStores = stores?.map(async (s) => {
+      const products = await productModel.find({ storeId: s._id });
+      if (products.length > 20) {
+        return {
+          featuredStore: s,
+          count: products?.length,
+        };
+      }
+      return null;
+    });
+
+    const fs = await Promise.all(mapStores);
+    featuredStores = fs.filter((s) => s !== null);
+
+    console.log(featuredStores, "featured storess");
+    res.json({ success: true, data: featuredStores });
+  }
+);
