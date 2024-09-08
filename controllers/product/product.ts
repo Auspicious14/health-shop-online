@@ -103,11 +103,12 @@ export const getProducts = async (req: Request, res: Response) => {
     if (newArrival) {
       data = await productModel
         .find(query)
+        .populate("categories")
         .sort({ createdAt: -1 })
         .limit(10)
         .exec();
     } else {
-      data = await productModel.find(query).exec();
+      data = await productModel.find(query).populate("categories").exec();
     }
 
     res.json({ success: true, data });
@@ -119,7 +120,9 @@ export const getProducts = async (req: Request, res: Response) => {
 export const getProduct = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const data: any = await productModel.findOne({ _id: id });
+    const data: any = await productModel
+      .findOne({ _id: id })
+      .populate("categories");
     if (data._id != id) return res.json({ error: "product not found" });
 
     res.json({ data });

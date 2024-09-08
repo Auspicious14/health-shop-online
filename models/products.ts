@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
+import slugify from "slugify";
 const Schema = mongoose.Schema;
 
 const productSchema = new Schema(
@@ -14,7 +15,7 @@ const productSchema = new Schema(
     images: [
       { uri: { type: String }, name: { type: String }, type: { type: String } },
     ],
-    categories: { type: Array },
+    categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "category" }],
     price: { type: String, required: true },
     quantity: { type: String },
     soldout: { type: String, default: false },
@@ -23,6 +24,11 @@ const productSchema = new Schema(
     size: { type: String },
     color: { type: String },
     rating: { type: Number },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
   },
   { timestamps: true }
 );

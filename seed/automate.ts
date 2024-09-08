@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
-// const productModel = require("../models/products");
-// const StoreModel = require("../models/store");
 import StoreModel from "../models/store";
 import productModel from "../models/products";
+import categoryModel from "../models/category";
+import { categoryMappings } from "./sample";
+import slugify from "slugify";
+import { v4 as uuidv4 } from "uuid";
 
 const { faker } = require("@faker-js/faker");
 
@@ -15,14 +17,83 @@ mongoose.connect(URI, {
   useUnifiedTopology: true,
 });
 
-// Generate Stores and Products
-const generateStoresAndProducts = async () => {
-  try {
-    // Clear existing data
-    // await StoreModel.deleteMany({});
-    // await productModel.deleteMany({});
+const generateProductData = (name: string, category: any) => {
+  let categoryMatch = categoryMappings[category] || null;
 
-    // Create stores
+  if (categoryMatch) {
+    const randomDescription = faker.helpers.arrayElement(
+      categoryMatch.description
+    );
+
+    return {
+      description: randomDescription,
+      images: [
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: categoryMatch.imageCategory.split(" ")[0],
+            width: 320,
+            height: 240,
+          }),
+          name,
+          type: "image/jpeg",
+        },
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: categoryMatch.imageCategory.split(" ")[0],
+            width: 320,
+            height: 240,
+          }),
+          name,
+          type: "image/jpeg",
+        },
+      ],
+    };
+  } else {
+    // Fallback if no category match is found
+    return {
+      description: "This is a high-quality product suitable for various needs.",
+      images: [
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: "products",
+            width: 320,
+            height: 240,
+          }),
+          name,
+          type: "image/jpeg",
+        },
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: "products",
+            width: 320,
+            height: 240,
+          }),
+          name,
+          type: "image/jpeg",
+        },
+      ],
+    };
+  }
+};
+
+const generateCategoriesStoresAndProducts = async () => {
+  try {
+    // await categoryModel.deleteMany({});
+    await StoreModel.deleteMany({});
+    await productModel.deleteMany({});
+
+    // const categoryDocuments = [];
+    // for (const category of categories) {
+    //   const slug = slugify(category.name, { lower: true, strict: true });
+    //   const categoryDoc = new categoryModel({ ...category, slug });
+    //   await categoryDoc.save();
+    //   categoryDocuments.push(categoryDoc);
+    // }
+
+    // console.log("Categories seeded successfully!");
+
+    const categories = await categoryModel.find();
+
     const stores = [];
     for (let i = 0; i < 10; i++) {
       const store = new StoreModel({
@@ -61,14 +132,18 @@ const generateStoresAndProducts = async () => {
         identificationImage: [
           {
             uri: faker.image.urlLoremFlickr({
-              category: "identification image",
+              category: "identification",
+              width: 320,
+              height: 240,
             }),
             name: faker.lorem.word(),
             type: "image/jpeg",
           },
           {
             uri: faker.image.urlLoremFlickr({
-              category: "identification image",
+              category: "identification",
+              width: 320,
+              height: 240,
             }),
             name: faker.lorem.word(),
             type: "image/jpeg",
@@ -83,42 +158,29 @@ const generateStoresAndProducts = async () => {
       stores.push(store);
     }
 
-    // Create products for each store
     for (const store of stores) {
       for (let i = 0; i < 10; i++) {
         const productName = faker.commerce.productName();
+
+        const productCategory = faker.helpers.arrayElement(
+          categories.map((cat) => cat.name)
+        );
+
+        const { description, images } = generateProductData(
+          productName,
+          productCategory
+        );
+
+        const productCategories = await categoryModel.find({
+          name: productCategory,
+        });
+
         const product = new productModel({
           name: productName,
-          description: faker.commerce.productDescription(),
+          description,
           storeId: store._id,
-          images: [
-            {
-              uri: faker.image.urlLoremFlickr({
-                category: getCategoryFromProductName(productName),
-              }),
-              name: faker.lorem.word(),
-              type: "image/jpeg",
-            },
-            {
-              uri: faker.image.urlLoremFlickr({
-                category: getCategoryFromProductName(productName),
-              }),
-              name: faker.lorem.word(),
-              type: "image/jpeg",
-            },
-            {
-              uri: faker.image.urlLoremFlickr({
-                category: getCategoryFromProductName(productName),
-              }),
-              name: faker.lorem.word(),
-              type: "image/jpeg",
-            },
-          ],
-          categories: faker.helpers.arrayElement([
-            "Electronics",
-            "Fashion",
-            "Home Appliances",
-          ]),
+          categories: productCategories.map((cat) => cat._id),
+          images,
           price: faker.commerce.price(),
           quantity: faker.number.int({ min: 1, max: 100 }).toString(),
           soldout: faker.datatype.boolean(),
@@ -130,6 +192,7 @@ const generateStoresAndProducts = async () => {
           size: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
           color: faker.color.human(),
           rating: faker.number.float({ min: 1, max: 5, precision: 0.1 }),
+          slug: await generateUniqueSlug(productName),
         });
         await product.save();
       }
@@ -139,14 +202,55 @@ const generateStoresAndProducts = async () => {
   } catch (error) {
     console.error("Error seeding data:", error);
   } finally {
-    mongoose.disconnect(); // Disconnect from MongoDB when done
+    mongoose.disconnect();
   }
 };
 
-function getCategoryFromProductName(name: string) {
-  const words = name.split(" ");
-  return words[words.length - 1].toLowerCase();
-}
+generateCategoriesStoresAndProducts();
 
-// Run the seeder function
-generateStoresAndProducts();
+const generateUniqueSlug = async (name: string) => {
+  let slug = slugify(name, { lower: true, strict: true });
+  slug = `${slug}-${uuidv4()}`;
+  return slug;
+};
+
+const addImageToCategories = async () => {
+  try {
+    const categories = await categoryModel.find();
+
+    for (const category of categories) {
+      const images = [
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: category.name?.split(" ")[0].toLowerCase(),
+            width: 320,
+            height: 240,
+          }),
+          name: category.name,
+          type: "image/jpeg",
+        },
+        {
+          uri: faker.image.urlLoremFlickr({
+            category: category.name?.split(" ")[0].toLowerCase(),
+            width: 320,
+            height: 240,
+          }),
+          name: category.name,
+          type: "image/jpeg",
+        },
+      ];
+      await categoryModel.findByIdAndUpdate(
+        category._id,
+        {
+          $set: { images },
+        },
+        { new: true }
+      );
+    }
+    console.log("Images added to categories successfully!");
+  } catch (error) {
+    console.log(error, "error");
+  }
+};
+
+// addImageToCategories();

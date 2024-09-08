@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const Schema = mongoose.Schema;
 
@@ -10,6 +11,10 @@ const categorySchema = new Schema(
       { name: { type: String } },
       { type: { type: String } },
     ],
+    slug: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
