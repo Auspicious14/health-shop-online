@@ -4,6 +4,7 @@ import {
   deleteProduct,
   getProduct,
   getProducts,
+  getProductsByCategorySlug,
   updateProduct,
 } from "../controllers/product/product";
 import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
@@ -12,6 +13,7 @@ const router = express.Router();
 router.post("/product", verifyTokenAndAdmin, createProducts);
 router.put("/product/:id", verifyTokenAndAdmin, updateProduct);
 router.get("/products", getProducts);
+router.get("/products/:slug", getProductsByCategorySlug);
 router.get("/product/:id", getProduct);
 router.delete("/product/:id", deleteProduct);
 export default router;

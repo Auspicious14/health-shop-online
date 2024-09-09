@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import productModel from "../../models/products";
 import { mapFiles } from "../../middlewares/file";
 import StoreModel, { IStore } from "../../models/store";
+import categoryModel from "../../models/category";
+import { handleErrors } from "../../middlewares/errorHandler";
 
 export const createProducts = async (req: Request, res: Response) => {
   const { storeId, images, ...values } = req.body;
@@ -78,6 +80,7 @@ export const getProducts = async (req: Request, res: Response) => {
     maxPrice,
     minPrice,
     color,
+    slug,
   } = req.query;
 
   try {
@@ -128,6 +131,26 @@ export const getProduct = async (req: Request, res: Response) => {
     res.json({ data });
   } catch (error) {
     res.json({ error });
+  }
+};
+
+export const getProductsByCategorySlug = async (
+  req: Request,
+  res: Response
+) => {
+  const { slug } = req.params;
+  try {
+    const category = await categoryModel.findOne({ slug });
+
+    if (!category) res.json({ sucess: false, message: "No category matched" });
+
+    const products = await productModel.find({
+      categories: { $in: [category!._id] },
+    });
+    res.json({ success: true, data: products });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.json({ errors });
   }
 };
 
