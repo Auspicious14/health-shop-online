@@ -65,9 +65,9 @@ export const updatecategory = async (req: Request, res: Response) => {
 };
 
 export const getCategory = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { slug } = req.params;
   try {
-    let data = await categoryModel.findOne({ id });
+    let data = await categoryModel.findOne({ slug });
     if (!data) res.json({ success: false, message: "category not found" });
 
     res.json({
