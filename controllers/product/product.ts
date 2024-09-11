@@ -4,6 +4,7 @@ import { mapFiles } from "../../middlewares/file";
 import StoreModel, { IStore } from "../../models/store";
 import categoryModel from "../../models/category";
 import { handleErrors } from "../../middlewares/errorHandler";
+import mongoose from "mongoose";
 
 export const createProducts = async (req: Request, res: Response) => {
   const { storeId, images, ...values } = req.body;
@@ -73,7 +74,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
 export const getProducts = async (req: Request, res: Response) => {
   const {
     storeId,
-    category,
     brand,
     newArrival,
     name,
@@ -81,7 +81,20 @@ export const getProducts = async (req: Request, res: Response) => {
     minPrice,
     color,
     slug,
+    categories,
+    limit,
   } = req.query;
+
+  let data;
+  let categoriesArray: string[] = [];
+  let categoryIds: mongoose.Types.ObjectId[] = [];
+  const query: any = {};
+
+  if (typeof categories === "string") {
+    categoriesArray = categories.split(",");
+  } else if (Array.isArray(categories)) {
+    categoriesArray = categories as string[];
+  }
 
   try {
     if (storeId) {
@@ -93,25 +106,38 @@ export const getProducts = async (req: Request, res: Response) => {
       }
     }
 
-    const query: any = {};
+    if (categoriesArray && categoriesArray.length > 0) {
+      const categories = await Promise.all(
+        categoriesArray.map(async (c) => {
+          return await categoryModel.findOne({ name: c });
+        })
+      );
+
+      categoryIds = categories
+        .filter((category) => category !== null)
+        .map((category) => category._id);
+    }
+
     if (storeId) query.storeId = storeId;
-    if (category) query.categories = { $in: [category] };
+    if (categoryIds) query.categories = { $in: categoryIds };
     if (name) query.name = { $regex: name, $options: "i" };
     if (brand) query.brand = brand;
     if (color) query.color = color;
     if (maxPrice && minPrice) query.price = { $gte: minPrice, $lte: maxPrice };
-
-    let data;
 
     if (newArrival) {
       data = await productModel
         .find(query)
         .populate("categories")
         .sort({ createdAt: -1 })
-        .limit(10)
+        .limit(20)
         .exec();
     } else {
-      data = await productModel.find(query).populate("categories").exec();
+      data = await productModel
+        .find(query)
+        .populate("categories")
+        .limit(parseFloat(limit as string))
+        .exec();
     }
 
     res.json({ success: true, data });
