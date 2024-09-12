@@ -125,12 +125,12 @@ export const getProducts = async (req: Request, res: Response) => {
     if (color) query.color = color;
     if (maxPrice && minPrice) query.price = { $gte: minPrice, $lte: maxPrice };
 
-    if (newArrival) {
+    if (newArrival == "true") {
       data = await productModel
-        .find(query)
+        .find()
         .populate("categories")
         .sort({ createdAt: -1 })
-        .limit(20)
+        .limit(10)
         .exec();
     } else {
       data = await productModel
