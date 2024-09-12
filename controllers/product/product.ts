@@ -82,6 +82,7 @@ export const getProducts = async (req: Request, res: Response) => {
     color,
     slug,
     categories,
+    page,
     limit,
   } = req.query;
 
@@ -89,6 +90,10 @@ export const getProducts = async (req: Request, res: Response) => {
   let categoriesArray: string[] = [];
   let categoryIds: mongoose.Types.ObjectId[] = [];
   const query: any = {};
+  const pageNumber = parseInt(page as string) || 1;
+  const limitNumber = parseInt(limit as string) || 50;
+
+  const skip = (pageNumber - 1) * limitNumber;
 
   if (typeof categories === "string") {
     categoriesArray = categories.split(",");
@@ -119,7 +124,7 @@ export const getProducts = async (req: Request, res: Response) => {
     }
 
     if (storeId) query.storeId = storeId;
-    if (categoryIds) query.categories = { $in: categoryIds };
+    if (categoryIds.length > 0) query.categories = { $in: categoryIds };
     if (name) query.name = { $regex: name, $options: "i" };
     if (brand) query.brand = brand;
     if (color) query.color = color;
@@ -136,23 +141,26 @@ export const getProducts = async (req: Request, res: Response) => {
       data = await productModel
         .find(query)
         .populate("categories")
-        .limit(parseFloat(limit as string))
+        .skip(skip)
+        .limit(limitNumber)
         .exec();
     }
 
-    res.json({ success: true, data });
+    const totalRecords = await productModel.countDocuments(query);
+
+    res.json({ success: true, data: { data, totalRecords } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
 export const getProduct = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const slug = req.params.id;
   try {
     const data: any = await productModel
-      .findOne({ _id: id })
+      .findOne({ slug })
       .populate("categories");
-    if (data._id != id) return res.json({ error: "product not found" });
+    if (data.slug != slug) return res.json({ error: "product not found" });
 
     res.json({ data });
   } catch (error) {
