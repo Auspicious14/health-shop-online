@@ -31,3 +31,22 @@ export const getFavorites = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const getOneFavorites = async (req: Request, res: Response) => {
+  let { _id } = req.params;
+  const id = new mongoose.Types.ObjectId(_id);
+  try {
+    if (id || id == "")
+      return res.json({ success: false, message: "Bad user input" });
+
+    const favorite = await favoriteModel.findById(id);
+
+    if (favorite?._id !== id)
+      return res.json({ success: false, message: "Bad user input" });
+
+    res.json({ success: true, data: favorite });
+  } catch (error: any) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
