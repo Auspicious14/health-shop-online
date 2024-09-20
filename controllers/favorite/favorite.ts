@@ -50,3 +50,24 @@ export const getOneFavorites = async (req: Request, res: Response) => {
     res.json({ errors });
   }
 };
+
+export const updateFavorite = async (req: Request, res: Response) => {
+  const { _id, productId, addToFavorite } = req.body;
+  try {
+    const product = await productModel.findById(productId);
+
+    if (productId !== product?._id.toString())
+      res.json({ success: false, message: "Product not found" });
+
+    const favorite = await favoriteModel.findByIdAndUpdate(
+      _id,
+      { $set: { productId: product!._id, addToFavorite } },
+      { new: true }
+    );
+
+    res.json({ success: true, data: favorite });
+  } catch (error: any) {
+    const errors = handleErrors(error);
+    res.json({ errors });
+  }
+};
