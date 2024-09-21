@@ -13,6 +13,7 @@ import ChatRoute from "./routes/chat";
 const cookieParser = require("cookie-parser");
 import cors from "cors";
 import express, { Request, Response, NextFunction } from "express";
+import { favoriteRouter } from "./routes/favorite";
 
 export const appRoute = express();
 
@@ -38,6 +39,7 @@ appRoute.use(reviewRoute);
 appRoute.use(categoryRoute);
 appRoute.use(StoreRoute);
 appRoute.use(ChatRoute);
+// appRoute.use(favoriteRouter)
 
 // const sendMessage = (socket: Socket) => {
 //   socket.on("send_message", async (data) => {

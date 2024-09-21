@@ -2,15 +2,32 @@ import express from "express";
 import {
   addToFavorite,
   getFavorites,
-  getOneFavorites,
+  getOneFavorite,
   updateFavorite,
 } from "../controllers/favorite/favorite";
+import { helper } from "./helper";
 
-const router = express.Router();
+export class favoriteRouter {
+  private router: express.Router;
 
-router.post("/favorite/add", addToFavorite);
-router.put("/favorite/update", updateFavorite);
-router.get("/favorites", getFavorites);
-router.get("/favorite/:_id", getOneFavorites);
+  constructor(private helperSvc: helper) {
+    this.router = express.Router();
+    this.initializeRoutes();
+  }
 
-export default router;
+  private initializeRoutes() {
+    this.router.post(
+      "/favorite/add",
+      this.helperSvc.routeHandler(addToFavorite)
+    );
+    this.router.put(
+      "/favorite/update",
+      this.helperSvc.routeHandler(updateFavorite)
+    );
+    this.router.get("/favorites", this.helperSvc.routeHandler(getFavorites));
+    this.router.get(
+      "/favorite/:_id",
+      this.helperSvc.routeHandler(getOneFavorite)
+    );
+  }
+}
