@@ -8,9 +8,11 @@ import {
 import { helper } from "./helper";
 
 export class favoriteRouter {
-  private router: express.Router;
+  router: express.Router;
+  private helperSvc: helper;
 
-  constructor(private helperSvc: helper) {
+  constructor() {
+    this.helperSvc = new helper();
     this.router = express.Router();
     this.initializeRoutes();
   }
