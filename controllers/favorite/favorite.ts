@@ -18,7 +18,7 @@ export const addToFavorite = async (req: Request, res: Response) => {
 
     const updatedProduct = await productModel.findByIdAndUpdate(
       productId,
-      { $set: { addToFavorite } },
+      { $set: { addedToFavorite: addToFavorite } },
       { new: true }
     );
 
@@ -75,7 +75,7 @@ export const updateFavorite = async (req: Request, res: Response) => {
 
     const updatedProduct = await productModel.findByIdAndUpdate(
       productId,
-      { $set: { addToFavorite } },
+      { $set: { addedToFavorite: addToFavorite } },
       { new: true }
     );
 
