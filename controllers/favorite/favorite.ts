@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { handleErrors } from "../../middlewares/errorHandler";
 import productModel from "../../models/products";
 import favoriteModel from "../../models/favorite";
@@ -14,8 +14,15 @@ export const addToFavorite = async (req: Request, res: Response) => {
 
     const favorite = new favoriteModel({ productId, addToFavorite });
     const data = await favorite.save();
+    const favoriteData = await favoriteModel.findById(data?._id);
 
-    res.json({ success: true, data });
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      { $set: { addToFavorite } },
+      { new: true }
+    );
+
+    res.json({ success: true, data: favoriteData, product: updatedProduct });
   } catch (error: any) {
     const errors = handleErrors(error);
     res.json({ errors });
@@ -24,7 +31,7 @@ export const addToFavorite = async (req: Request, res: Response) => {
 
 export const getFavorites = async (req: Request, res: Response) => {
   try {
-    const data = await favoriteModel.find();
+    const data = await favoriteModel.find().populate("productId");
     res.json({ success: true, data });
   } catch (error: any) {
     const errors = handleErrors(error);
@@ -32,17 +39,16 @@ export const getFavorites = async (req: Request, res: Response) => {
   }
 };
 
-export const getOneFavorites = async (req: Request, res: Response) => {
+export const getOneFavorite = async (req: Request, res: Response) => {
   let { _id } = req.params;
   const id = new mongoose.Types.ObjectId(_id);
   try {
-    if (id || id == "")
-      return res.json({ success: false, message: "Bad user input" });
+    if (id || id == "") res.json({ success: false, message: "Bad user input" });
 
-    const favorite = await favoriteModel.findById(id);
+    const favorite = await favoriteModel.findById(id).populate("productId");
 
     if (favorite?._id !== id)
-      return res.json({ success: false, message: "Bad user input" });
+      res.json({ success: false, message: "Bad user input" });
 
     res.json({ success: true, data: favorite });
   } catch (error: any) {
@@ -52,7 +58,8 @@ export const getOneFavorites = async (req: Request, res: Response) => {
 };
 
 export const updateFavorite = async (req: Request, res: Response) => {
-  const { _id, productId, addToFavorite } = req.body;
+  const { _id } = req.params;
+  const { productId, addToFavorite } = req.body;
   try {
     const product = await productModel.findById(productId);
 
@@ -64,8 +71,15 @@ export const updateFavorite = async (req: Request, res: Response) => {
       { $set: { productId: product!._id, addToFavorite } },
       { new: true }
     );
+    const favoriteData = await favoriteModel.findById(favorite?._id);
 
-    res.json({ success: true, data: favorite });
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      { $set: { addToFavorite } },
+      { new: true }
+    );
+
+    res.json({ success: true, data: favoriteData, product: updatedProduct });
   } catch (error: any) {
     const errors = handleErrors(error);
     res.json({ errors });

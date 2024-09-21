@@ -20,6 +20,7 @@ const productSchema = new Schema(
     quantity: { type: String },
     soldout: { type: String, default: false },
     availability: { type: String },
+    addedToFavorite: { type: Boolean, default: false },
     brand: { type: String },
     size: { type: String },
     color: { type: String },
