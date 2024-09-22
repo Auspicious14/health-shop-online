@@ -6,7 +6,34 @@ import mongoose from "mongoose";
 
 export const getFavorites = async (req: Request, res: Response) => {
   try {
-    const data = await favoriteModel.find().populate("productId");
+    const data = await favoriteModel.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      {
+        $unwind: "$product",
+      },
+      {
+        $project: {
+          _id: 1,
+          productId: 1,
+          addToFavorite: 1,
+          product: {
+            _id: "$product._id",
+            name: "$product.name",
+            description: "$product.description",
+            price: "$product.price",
+            slug: "$product.slug",
+            images: "$product.images",
+          },
+        },
+      },
+    ]);
     res.json({ success: true, data });
   } catch (error: any) {
     const errors = handleErrors(error);
@@ -56,6 +83,23 @@ export const saveToFavorite = async (req: Request, res: Response) => {
       data: favorite,
       product: updatedProduct,
     });
+  } catch (error) {
+    const errors = handleErrors(error);
+    res.status(500).json({ success: false, errors });
+  }
+};
+
+export const deleteFavorite = async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  try {
+    const favorite = await favoriteModel.findByIdAndDelete(_id);
+
+    await productModel.findByIdAndUpdate(
+      favorite?.productId,
+      { $set: { addedToFavorite: false } },
+      { new: true }
+    );
+    res.json({ success: true, message: "Product removed from wishlist" });
   } catch (error) {
     const errors = handleErrors(error);
     res.status(500).json({ success: false, errors });

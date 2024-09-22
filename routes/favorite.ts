@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  deleteFavorite,
   getFavorites,
   getOneFavorite,
   saveToFavorite,
@@ -22,6 +23,10 @@ export class favoriteRouter {
     this.router.get(
       "/favorite/:_id",
       this.helperSvc.routeHandler(getOneFavorite)
+    );
+    this.router.delete(
+      "/favorite/:_id",
+      this.helperSvc.routeHandler(deleteFavorite)
     );
   }
 }
