@@ -1,9 +1,8 @@
 import express from "express";
 import {
-  addToFavorite,
   getFavorites,
   getOneFavorite,
-  updateFavorite,
+  saveToFavorite,
 } from "../controllers/favorite/favorite";
 import { helper } from "./helper";
 
@@ -18,14 +17,7 @@ export class favoriteRouter {
   }
 
   private initializeRoutes() {
-    this.router.post(
-      "/favorite/add",
-      this.helperSvc.routeHandler(addToFavorite)
-    );
-    this.router.put(
-      "/favorite/update",
-      this.helperSvc.routeHandler(updateFavorite)
-    );
+    this.router.put("/favorite/save", saveToFavorite);
     this.router.get("/favorites", this.helperSvc.routeHandler(getFavorites));
     this.router.get(
       "/favorite/:_id",
