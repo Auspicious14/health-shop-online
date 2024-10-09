@@ -3,7 +3,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 import router from "./routes/userAuth";
-import productRouter from "./routes/product";
 import blogRouter from "./routes/blog";
 import cartRouter from "./routes/cart";
 import orderRoute from "./routes/order";
@@ -11,10 +10,12 @@ import reviewRoute from "./routes/review";
 import categoryRoute from "./routes/category";
 import StoreRoute from "./routes/store";
 import ChatRoute from "./routes/chat";
-const cookieParser = require("cookie-parser");
+import { productRouter } from "./routes/product";
 import cors from "cors";
+const cookieParser = require("cookie-parser");
 import { favoriteRouter } from "./routes/favorite";
 const favoriteRoute = new favoriteRouter();
+const productRoute = new productRouter();
 
 export const appRoute = express();
 
@@ -32,7 +33,7 @@ appRoute.use(express.urlencoded({ limit: "50mb", extended: true }));
 appRoute.use(cookieParser());
 // appRoute.use(express.json());
 appRoute.use("/auth", router);
-appRoute.use(productRouter);
+appRoute.use(productRoute.router);
 appRoute.use(blogRouter);
 appRoute.use(cartRouter);
 appRoute.use(orderRoute);

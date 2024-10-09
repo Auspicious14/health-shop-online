@@ -8,12 +8,38 @@ import {
   updateProduct,
 } from "../controllers/product/product";
 import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
-const router = express.Router();
+import { helper } from "./helper";
 
-router.post("/product", verifyTokenAndAdmin, createProducts);
-router.put("/product/:id", verifyTokenAndAdmin, updateProduct);
-router.get("/products", getProducts);
-router.get("/products/:slug", getProductsByCategorySlug);
-router.get("/product/:id", getProduct);
-router.delete("/product/:id", deleteProduct);
-export default router;
+export class productRouter {
+  router: express.Router;
+  private helperSvc: helper;
+
+  constructor() {
+    this.helperSvc = new helper();
+    this.router = express.Router();
+    this.initializeRoutes();
+  }
+
+  private initializeRoutes() {
+    this.router.post(
+      "/product",
+      verifyTokenAndAdmin,
+      this.helperSvc.routeHandler(createProducts)
+    );
+    this.router.put(
+      "/product/:id",
+      verifyTokenAndAdmin,
+      this.helperSvc.routeHandler(updateProduct)
+    );
+    this.router.get("/products", this.helperSvc.routeHandler(getProducts));
+    this.router.get(
+      "/products/:slug",
+      this.helperSvc.routeHandler(getProductsByCategorySlug)
+    );
+    this.router.get("/product/:id", this.helperSvc.routeHandler(getProduct));
+    this.router.delete(
+      "/product/:id",
+      this.helperSvc.routeHandler(deleteProduct)
+    );
+  }
+}

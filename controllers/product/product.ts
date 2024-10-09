@@ -6,12 +6,17 @@ import categoryModel from "../../models/category";
 import { handleErrors } from "../../middlewares/errorHandler";
 import mongoose from "mongoose";
 
-export const createProducts = async (req: Request, res: Response) => {
+export const createProducts = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { storeId, images, ...values } = req.body;
   try {
     const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathorized" });
+    if (store?._id != storeId) {
+      res.status(400).json({ success: false, message: "Unathorized" });
+      return;
+    }
 
     const files = await mapFiles(images);
     const product: any = new productModel({
@@ -31,8 +36,10 @@ export const updateProduct = async (req: Request, res: Response) => {
   const { storeId, images, ...values } = req.body;
   try {
     const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathorized" });
+    if (store?._id != storeId) {
+      res.status(400).json({ success: false, message: "Unathorized" });
+      return;
+    }
 
     const files = await mapFiles(images);
     const data: any = await productModel.findOneAndUpdate(
@@ -53,15 +60,20 @@ export const deleteProduct = async (req: Request, res: Response) => {
   const { storeId } = req.query;
   try {
     const store: IStore | null = await StoreModel.findById(storeId);
-    if (store?._id != storeId)
-      return res.status(400).json({ success: false, message: "Unathorized" });
+    if (store?._id != storeId) {
+      res.status(400).json({ success: false, message: "Unathorized" });
+      return;
+    }
 
-    if (id == "" || !id)
-      return res.status(400).json({ success: false, message: "Invalid value" });
+    if (id == "" || !id) {
+      res.status(400).json({ success: false, message: "Invalid value" });
+      return;
+    }
 
     const data: any = await productModel.findOneAndDelete({ _id: id, storeId });
     if (data) {
       res.json({ success: true, message: "Product deleted" });
+      return;
     }
   } catch (error) {
     res.json({
@@ -71,7 +83,10 @@ export const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const {
     storeId,
     brand,
@@ -105,9 +120,8 @@ export const getProducts = async (req: Request, res: Response) => {
     if (storeId) {
       const store = await StoreModel.findById(storeId);
       if (!store) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Unauthorized" });
+        res.status(400).json({ success: false, message: "Unauthorized" });
+        return;
       }
     }
 
@@ -154,13 +168,19 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProduct = async (req: Request, res: Response) => {
+export const getProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const slug = req.params.id;
   try {
     const data: any = await productModel
       .findOne({ slug })
       .populate("categories");
-    if (data.slug != slug) return res.json({ error: "product not found" });
+    if (data.slug != slug) {
+      res.json({ error: "product not found" });
+      return;
+    }
 
     res.json({ data });
   } catch (error) {
@@ -171,7 +191,7 @@ export const getProduct = async (req: Request, res: Response) => {
 export const getProductsByCategorySlug = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
   const { slug } = req.params;
   try {
     const category = await categoryModel.findOne({ slug });
