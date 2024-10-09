@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { mapFiles } from "../../middlewares/file";
-import { imageSearchApi } from "../../middlewares/imageSearch";
+import { imageLabelDetection } from "../../middlewares/imageSearch";
+import productModel from "../../models/products";
 
-export const ImageSearch = async (req: Request, res: Response) => {
+export const getProductsByImage = async (req: Request, res: Response) => {
   const { file } = req.body;
   try {
     const images = await mapFiles(file);
@@ -12,9 +13,17 @@ export const ImageSearch = async (req: Request, res: Response) => {
         .status(400)
         .json({ success: false, message: "Errror uploading image to server" });
 
-    const result = await imageSearchApi(images[0]?.uri);
+    const result = await imageLabelDetection(images[0]?.uri);
 
-    // if (result)
+    if (!result) {
+      res
+        .status(400)
+        .json({ sucess: false, message: "Error searching products" });
+      return;
+    }
+    const products = await productModel.find({ name: result });
+    console.log(products);
+    res.status(200).json({ success: true, data: products });
     console.log(result, "resultttt");
   } catch (error) {
     res.status(500).json({ success: false, error });

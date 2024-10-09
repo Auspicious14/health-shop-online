@@ -9,6 +9,7 @@ import {
 } from "../controllers/product/product";
 import { verifyTokenAndAdmin } from "../middlewares/verifyToken";
 import { helper } from "./helper";
+import { getProductsByImage } from "../controllers/product/search";
 
 export class productRouter {
   router: express.Router;
@@ -35,6 +36,10 @@ export class productRouter {
     this.router.get(
       "/products/:slug",
       this.helperSvc.routeHandler(getProductsByCategorySlug)
+    );
+    this.router.get(
+      "/products/image",
+      this.helperSvc.routeHandler(getProductsByImage)
     );
     this.router.get("/product/:id", this.helperSvc.routeHandler(getProduct));
     this.router.delete(
