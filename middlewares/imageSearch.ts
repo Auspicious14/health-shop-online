@@ -1,20 +1,24 @@
 import vision from "@google-cloud/vision";
+const client = new vision.ImageAnnotatorClient();
 
 export const imageLabelDetection = async (imageUrl: string) => {
-  const client = new vision.ImageAnnotatorClient();
+  try {
+    let imageDescriptions: string[] = [];
+    const [result] = await client.labelDetection(imageUrl);
+    const labels = result.labelAnnotations;
 
-  const [result] = await client.labelDetection(imageUrl);
-  const labels = result.labelAnnotations;
-  console.log("Labels:", labels);
+    if (labels && labels.length > 0) {
+      labels.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-  if (labels && labels.length > 0) {
-    labels.sort((a, b) => (b.score || 0) - (a.score || 0));
-
-    const image = labels[0].description;
-    return image;
+      for (const label of labels) {
+        imageDescriptions.push(label.description as string);
+      }
+    }
+    return imageDescriptions;
+  } catch (error) {
+    console.log({ error });
+    throw error;
   }
-
-  return null;
 };
 //   labels!.forEach((label, i) => {
 //     console.log(`label ${i}: `, label);

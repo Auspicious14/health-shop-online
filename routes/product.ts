@@ -37,8 +37,8 @@ export class productRouter {
       "/products/:slug",
       this.helperSvc.routeHandler(getProductsByCategorySlug)
     );
-    this.router.get(
-      "/products/image",
+    this.router.post(
+      "/products/search-by-image",
       this.helperSvc.routeHandler(getProductsByImage)
     );
     this.router.get("/product/:id", this.helperSvc.routeHandler(getProduct));
