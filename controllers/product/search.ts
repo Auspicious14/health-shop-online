@@ -24,13 +24,17 @@ export const getProductsByImage = async (req: Request, res: Response) => {
       return;
     }
     const pattern = results.map((c) => c.trim()).join("|");
+
     products = await productModel.find({
       name: {
         $regex: pattern,
         $options: "i",
       },
     });
-    res.status(200).json({ success: true, data: products });
+
+    res
+      .status(200)
+      .json({ success: true, data: products, totalRecords: products?.length });
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
