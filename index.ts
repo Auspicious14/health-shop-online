@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 const dotenv = require("dotenv");
 dotenv.config();
-
+import checksRouter from "./routes/syschecks";
 import router from "./routes/userAuth";
 import blogRouter from "./routes/blog";
 import cartRouter from "./routes/cart";
@@ -33,6 +33,7 @@ appRoute.use(express.urlencoded({ limit: "50mb", extended: true }));
 appRoute.use(cookieParser());
 // appRoute.use(express.json());
 appRoute.use("/auth", router);
+appRoute.use(checksRouter);
 appRoute.use(productRoute.router);
 appRoute.use(blogRouter);
 appRoute.use(cartRouter);

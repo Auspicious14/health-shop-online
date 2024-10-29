@@ -1,0 +1,21 @@
+instance_class: F1
+entrypoint: npm start
+runtime: nodejs18
+
+liveness_check: 
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+
+readiness_check:
+  path: "/ready"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+
+inbound_services:
+  - mail
+  - warmup

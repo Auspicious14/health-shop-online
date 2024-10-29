@@ -1,0 +1,10 @@
+node_modules/
+seed/
+.gitignore
+.env
+controllers/
+middlewares/
+models/
+routes/
+utils/
+*.ts
