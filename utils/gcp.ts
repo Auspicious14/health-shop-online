@@ -1,7 +1,6 @@
-import express from "express";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
+import { GoogleAuth } from "google-auth-library";
 
-const app = express();
 const client = new SecretManagerServiceClient();
 
 async function accessSecret(secretName: string) {
@@ -18,7 +17,6 @@ async function accessSecret(secretName: string) {
   }
 }
 
-// Fetch secrets
 export async function loadSecrets() {
   process.env.PORT = await accessSecret("PORT");
   process.env.CLOUDINARY_KEY = await accessSecret("CLOUDINARY_KEY");
@@ -32,7 +30,17 @@ export async function loadSecrets() {
   process.env.NODE_VERSION = "18.16.0";
   process.env.PAYSTACK_KEY = await accessSecret("PAYSTACK_KEY");
   process.env.PAYSTACK_SECRET = await accessSecret("PAYSTACK_SECRET");
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = await accessSecret(
+
+  const googleCredentialsJson: any = await accessSecret(
     "GOOGLE_APPLICATION_CREDENTIALS"
   );
+  const googleCredentials = JSON.parse(googleCredentialsJson);
+
+  const auth = new GoogleAuth({
+    credentials: googleCredentials,
+  });
+
+  return auth;
 }
+
+// console.log(loadSecrets().then((res) => console.log("ressss", res)));

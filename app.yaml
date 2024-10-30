@@ -1,5 +1,4 @@
 instance_class: F1
-entrypoint: npm start
 runtime: nodejs18
 
 liveness_check: 

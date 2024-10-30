@@ -1,5 +1,12 @@
 import vision from "@google-cloud/vision";
-const client = new vision.ImageAnnotatorClient();
+
+const client = new vision.ImageAnnotatorClient({
+  projectId: process.env.GCLOUD_PROJECT_ID,
+  credentials: {
+    client_email: process.env.GCLOUD_CLIENT_EMAIL,
+    private_key: process.env.GCLOUD_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+  },
+});
 
 export const imageLabelDetection = async (imageUrl: string) => {
   try {
@@ -20,7 +27,3 @@ export const imageLabelDetection = async (imageUrl: string) => {
     throw error;
   }
 };
-//   labels!.forEach((label, i) => {
-//     console.log(`label ${i}: `, label);
-//     imageLabels.push(label.description as string)
-//   });

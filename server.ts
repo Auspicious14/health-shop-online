@@ -6,13 +6,16 @@ const mongoose = require("mongoose");
 import { appRoute } from "./index";
 import { createServer } from "http";
 import { SocketInit } from "./controllers/chat/socket";
-import { loadSecrets } from "./utils/gcp";
 
 const startServer = async () => {
-  await loadSecrets();
-
   const port = process.env.PORT || 5000;
   const URI: any = process.env.MONGODB_URL;
+
+  if (!process.env.MONGODB_URL) {
+    throw new Error(
+      "MONGODB_URL is not set. Unable to connect to the database."
+    );
+  }
   mongoose
     .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
