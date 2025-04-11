@@ -14,13 +14,13 @@ import { acceptStore, rejectStore } from "../controllers/store/accept";
 
 const router = express.Router();
 
-router.post("/store", createStore);
-router.put("/store/:id", updateStore);
-router.delete("/store/delete/:id", deleteStore);
+router.post("/store", verifyTokenAndAdmin, createStore);
+router.put("/store/:id", verifyTokenAndAdmin, updateStore);
+router.delete("/store/delete/:id", verifyTokenAndAdmin, deleteStore);
 router.get("/stores", getAllStores);
 router.get("/store/:id", getUserStore);
-router.post("/store/accept", acceptStore);
-router.post("/store/reject", rejectStore);
+router.post("/store/accept", verifyTokenAndAdmin, acceptStore);
+router.post("/store/reject", verifyTokenAndAdmin, rejectStore);
 router.get("/stores/new", newStores);
 router.get("/stores/top", topStores);
 router.get("/stores/featured", featuredStores);
